@@ -65,6 +65,10 @@
   <!-- html2pdf.js: A4 Vector-grade PDF Exporter -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+  <!-- Firebase Realtime Database for Cloud Key Sync -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <style>
     :root {
       --title-font: 'Cinzel', serif;
@@ -148,18 +152,28 @@
       animation: laserScan 2.4s infinite ease-in-out;
     }
 
+    /* Pan and Drag Cursor Modes */
+    .cursor-grab {
+      cursor: grab !important;
+    }
+    .cursor-grabbing {
+      cursor: grabbing !important;
+      user-select: none !important;
+    }
+
     /* Standard A4 Printable Paper Dimensions with Clean Pagebreak */
     .a4-sheet-container {
       width: 100%;
-      max-width: 820px;
-      min-height: 1160px;
+      max-width: 800px;
+      min-height: 1120px;
       background-color: var(--paper-bg);
       color: #111111;
-      padding: 16mm 18mm;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.3);
+      padding: 12mm 14mm;
+      box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.3);
       position: relative;
       margin: 0 auto;
-      transition: transform 0.15s ease-out;
+      transition: transform 0.1s ease-out;
+      transform-origin: top center;
     }
 
     /* Specific ABCjs Sheet Music Styling Rules */
@@ -175,6 +189,7 @@
       display: block;
       page-break-inside: avoid !important;
       break-inside: avoid !important;
+      margin: 0 auto !important;
     }
     /* Staff lines: soft classic gray / dim black */
     .abcjs-staff {
@@ -221,7 +236,7 @@
       display: none !important;
     }
 
-    .abcjs-title, .abcjs-composer, .abcjs-header {
+    .abcjs-title, .abcjs-composer, .abcjs-header, .abcjs-subtitle {
       display: none !important;
     }
 
@@ -476,136 +491,131 @@
     </div>
   </section>
 
-  <!-- ================= SPLIT WORKSPACE WITH INDEPENDENT ZOOM ================= -->
-  <main id="mainWorkspace" class="max-w-7xl mx-auto px-4 py-3 relative z-10">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+  <!-- ================= SPLIT WORKSPACE WITH MATCHED CONTAINERS & PAN ZOOM ================= -->
+  <main id="mainWorkspace" class="max-w-7xl mx-auto px-4 py-3 relative z-10 space-y-3">
+
+    <!-- ================= BUILT-IN AUDIO SYNTH PLAYER BAR (FULL WIDTH TOP) ================= -->
+    <div id="audioPlayerBar" class="w-full glass-card rounded-2xl p-2.5 sm:px-4 sm:py-2.5 border border-gold-500/30 shadow-lg flex flex-wrap items-center justify-between gap-2 text-xs">
       
-      <!-- LEFT COLUMN: Original Uploaded Scan Preview with ZOOM (5 Cols) -->
-      <div id="leftCompareCol" class="lg:col-span-5 space-y-2">
-        <div class="glass-card rounded-2xl p-3 sm:p-4 border border-gold-500/20">
-          
-          <!-- Left Header & Zoom Controls Toolbar -->
-          <div class="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-gold-500/15">
-            <span class="text-xs font-cinzel font-bold text-gold-400 flex items-center gap-1.5">
-              <span>📄</span> Orijinal Belge
-            </span>
-
-            <!-- Original Panel Zoom Controls -->
-            <div class="flex items-center gap-1 bg-wood-900 border border-gold-500/25 rounded-lg px-1.5 py-0.5 zoom-toolbar">
-              <button onclick="zoomOrig(-0.15)" class="w-6 h-6 rounded hover:bg-wood-800 text-stone-300 font-bold text-sm flex items-center justify-center transition-all" title="Uzaklaş">
-                −
-              </button>
-              <span id="labelOrigZoom" class="text-[11px] font-mono text-gold-300 w-10 text-center">100%</span>
-              <button onclick="zoomOrig(+0.15)" class="w-6 h-6 rounded hover:bg-wood-800 text-stone-300 font-bold text-sm flex items-center justify-center transition-all" title="Yakınlaş">
-                +
-              </button>
-              <button onclick="resetOrigZoom()" class="px-1.5 py-0.5 rounded text-[10px] bg-wood-850 hover:bg-wood-800 text-stone-400 hover:text-white transition-all ml-0.5" title="Sıfırla">
-                100%
-              </button>
-            </div>
+      <!-- Left: Play/Pause/Stop & Status -->
+      <div class="flex items-center gap-2">
+        <button id="btnAudioPlay" onclick="toggleAudioPlayback()" class="w-9 h-9 rounded-xl bg-gradient-to-br from-gold-500 to-amber-500 hover:from-gold-400 hover:to-amber-400 text-wood-950 font-bold flex items-center justify-center shadow-md transition-all">
+          <svg id="iconAudioPlay" class="w-4 h-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <svg id="iconAudioPause" class="w-4 h-4 hidden" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+        <button onclick="stopAudioPlayback()" class="w-8 h-8 rounded-xl bg-wood-850 hover:bg-wood-800 text-stone-400 hover:text-white border border-gold-500/20 flex items-center justify-center transition-all" title="Başa Al">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+        </button>
+        <div class="leading-tight">
+          <div class="font-cinzel font-bold text-stone-200 flex items-center gap-1.5">
+            <span id="audioPlayingDot" class="w-2 h-2 rounded-full bg-stone-500 inline-block"></span>
+            <span id="audioStatusText">Dinleme / Önizleme</span>
           </div>
-
-          <!-- Original Preview Container -->
-          <div id="origPreviewContainer" class="w-full h-[520px] lg:h-[720px] bg-wood-950 rounded-xl border border-gold-500/15 overflow-auto relative p-2 flex items-center justify-center">
-            
-            <!-- Empty Placeholder -->
-            <div id="origPlaceholder" class="text-center p-6 text-stone-500 space-y-2 max-w-xs">
-              <div class="w-12 h-12 rounded-2xl bg-wood-900 border border-gold-500/20 text-gold-400/60 flex items-center justify-center mx-auto text-xl">
-                📸
-              </div>
-              <h5 class="text-xs font-cinzel font-bold text-stone-300">Henüz Bir Belge Yüklenmedi</h5>
-              <p class="text-[11px] text-stone-500">
-                Yukarıdaki alana bir nota PDF'i veya resim sürükleyin ya da tıklayıp seçin.
-              </p>
-            </div>
-
-            <!-- Zoomable Media Container -->
-            <div id="origZoomWrapper" class="transition-transform duration-150 origin-top inline-block max-w-full">
-              <img id="origImage" class="hidden max-w-full shadow-md rounded object-contain mx-auto" alt="Orijinal Nota Kağıdı">
-              <canvas id="origCanvas" class="hidden max-w-full shadow-md rounded bg-white mx-auto"></canvas>
-            </div>
-          </div>
-
-          <div class="mt-2 text-[11px] text-stone-400 flex items-center justify-between px-1">
-            <span id="origDocLabel" class="truncate max-w-[200px]">Belge bekleniyor</span>
-            <span class="text-stone-500">Zumlayıp detayları inceleyebilirsiniz.</span>
-          </div>
+          <div class="text-[10px] text-stone-400" id="audioNoteIndicator">Hazır • Web Audio Algoritmik Sentezleyici</div>
         </div>
       </div>
 
-      <!-- RIGHT COLUMN: Digital Vector A4 Sheet & Audio Synth Bar with ZOOM (7 Cols) -->
-      <div id="rightScoreCol" class="lg:col-span-7 flex flex-col items-center space-y-2">
+      <!-- Middle: Instrument Presets -->
+      <div class="flex items-center gap-1.5">
+        <span class="text-[11px] text-stone-400 font-cinzel">TINI:</span>
+        <select id="selectAudioInstrument" onchange="changeAudioInstrument(this.value)" class="bg-wood-850 border border-gold-500/30 rounded-lg px-2.5 py-1 text-xs text-stone-200 focus:outline-none focus:border-gold-400">
+          <option value="ney" selected>🎵 Ney / Flüt (Doğal Nefesli)</option>
+          <option value="ud">🪕 Ud / Tanbur (Mızraplı)</option>
+          <option value="piano">🎹 Akustik Piyano</option>
+          <option value="sine">🔔 Saf Sinüs Ton</option>
+        </select>
+      </div>
+
+      <!-- Right: Tempo BPM Slider -->
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] text-stone-400 font-cinzel">HIZ:</span>
+        <input type="range" id="sliderBpm" min="50" max="140" value="76" oninput="changeAudioTempo(this.value)" class="w-24 accent-gold-500 cursor-pointer">
+        <span id="labelBpm" class="text-[11px] font-mono font-bold text-gold-300 w-12 text-right">76 BPM</span>
+      </div>
+
+    </div>
+
+    <!-- DUAL SIDE-BY-SIDE EQUAL PANELS (50% - 50%) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch w-full">
+      
+      <!-- LEFT PANEL: Original Uploaded Scan Preview -->
+      <div id="leftCompareCol" class="glass-card rounded-2xl border border-gold-500/25 flex flex-col overflow-hidden shadow-2xl">
         
-        <!-- ================= BUILT-IN AUDIO SYNTH PLAYER BAR ================= -->
-        <div id="audioPlayerBar" class="w-full max-w-[820px] glass-card rounded-2xl p-2.5 sm:px-4 sm:py-2.5 border border-gold-500/30 shadow-lg flex flex-wrap items-center justify-between gap-2 text-xs">
+        <!-- Sticky Header (Never Scrolls Away!) -->
+        <div class="sticky top-0 z-30 bg-wood-900/95 backdrop-blur-md px-3.5 py-2 border-b border-gold-500/20 flex items-center justify-between gap-2 shrink-0">
+          <div class="flex items-center gap-2 truncate">
+            <span class="text-sm">📄</span>
+            <span class="text-xs font-cinzel font-bold text-gold-400">Orijinal Belge</span>
+            <span id="origDocLabel" class="text-[10px] text-stone-400 truncate max-w-[140px]">Belge bekleniyor</span>
+          </div>
+
+          <!-- Original Panel Zoom & Fit Controls -->
+          <div class="flex items-center gap-1 bg-wood-950 border border-gold-500/25 rounded-lg px-1.5 py-0.5 zoom-toolbar">
+            <button onclick="zoomOrig(-0.15)" class="w-6 h-6 rounded hover:bg-wood-800 text-stone-300 font-bold text-sm flex items-center justify-center transition-all" title="Uzaklaş">−</button>
+            <span id="labelOrigZoom" class="text-[11px] font-mono font-bold text-gold-300 w-11 text-center">100%</span>
+            <button onclick="zoomOrig(+0.15)" class="w-6 h-6 rounded hover:bg-wood-800 text-stone-300 font-bold text-sm flex items-center justify-center transition-all" title="Yakınlaş">+</button>
+            <button onclick="resetOrigZoom()" class="px-2 py-0.5 rounded text-[10px] bg-wood-850 hover:bg-wood-800 text-stone-300 font-medium transition-all ml-0.5" title="Sıfırla">100%</button>
+            <button onclick="fitOrigWidth()" class="px-2 py-0.5 rounded text-[10px] bg-wood-850 hover:bg-wood-800 text-gold-300 hover:text-white font-medium transition-all" title="Genişliğe Sığdır">Sığdır</button>
+          </div>
+        </div>
+
+        <!-- Original Preview Viewport (Scrollable & Draggable Pan) -->
+        <div id="origPreviewContainer" class="flex-1 w-full h-[600px] lg:h-[750px] bg-wood-950/90 overflow-auto relative p-3 flex items-start justify-center cursor-grab select-none">
           
-          <!-- Left: Play/Pause/Stop & Status -->
-          <div class="flex items-center gap-2">
-            <button id="btnAudioPlay" onclick="toggleAudioPlayback()" class="w-9 h-9 rounded-xl bg-gradient-to-br from-gold-500 to-amber-500 hover:from-gold-400 hover:to-amber-400 text-wood-950 font-bold flex items-center justify-center shadow-md transition-all">
-              <svg id="iconAudioPlay" class="w-4 h-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <svg id="iconAudioPause" class="w-4 h-4 hidden" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            </button>
-            <button onclick="stopAudioPlayback()" class="w-8 h-8 rounded-xl bg-wood-850 hover:bg-wood-800 text-stone-400 hover:text-white border border-gold-500/20 flex items-center justify-center transition-all" title="Başa Al">
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
-            </button>
-            <div class="leading-tight">
-              <div class="font-cinzel font-bold text-stone-200 flex items-center gap-1.5">
-                <span id="audioPlayingDot" class="w-2 h-2 rounded-full bg-stone-500 inline-block"></span>
-                <span id="audioStatusText">Dinleme / Önizleme</span>
-              </div>
-              <div class="text-[10px] text-stone-400" id="audioNoteIndicator">Hazır • Web Audio Algoritmik Sentezleyici</div>
+          <!-- Empty Placeholder -->
+          <div id="origPlaceholder" class="m-auto text-center p-6 text-stone-500 space-y-2 max-w-xs">
+            <div class="w-12 h-12 rounded-2xl bg-wood-900 border border-gold-500/20 text-gold-400/60 flex items-center justify-center mx-auto text-xl">
+              📸
             </div>
+            <h5 class="text-xs font-cinzel font-bold text-stone-300">Henüz Bir Belge Yüklenmedi</h5>
+            <p class="text-[11px] text-stone-500">
+              Yukarıdaki alana bir nota PDF'i veya resim sürükleyin ya da tıklayıp seçin.
+            </p>
           </div>
 
-          <!-- Middle: Instrument Presets -->
-          <div class="flex items-center gap-1.5">
-            <span class="text-[11px] text-stone-400">TINI:</span>
-            <select id="selectAudioInstrument" onchange="changeAudioInstrument(this.value)" class="bg-wood-850 border border-gold-500/30 rounded-lg px-2 py-1 text-xs text-stone-200 focus:outline-none focus:border-gold-400">
-              <option value="ney" selected>🎵 Ney / Flüt (Doğal Nefesli)</option>
-              <option value="ud">🪕 Ud / Tanbur (Mızraplı)</option>
-              <option value="piano">🎹 Akustik Piyano</option>
-              <option value="sine">🔔 Saf Sinüs Ton</option>
-            </select>
+          <!-- Zoomable Media Container -->
+          <div id="origZoomWrapper" class="transition-transform duration-100 origin-top inline-block max-w-full">
+            <img id="origImage" class="hidden max-w-full shadow-md rounded object-contain mx-auto pointer-events-none" alt="Orijinal Nota Kağıdı">
+            <canvas id="origCanvas" class="hidden max-w-full shadow-md rounded bg-white mx-auto pointer-events-none"></canvas>
           </div>
-
-          <!-- Right: Tempo BPM Slider -->
-          <div class="flex items-center gap-2">
-            <span class="text-[11px] text-stone-400">HIZ:</span>
-            <input type="range" id="sliderBpm" min="50" max="130" value="76" oninput="changeAudioTempo(this.value)" class="w-20 accent-gold-500 cursor-pointer">
-            <span id="labelBpm" class="text-[11px] font-mono font-bold text-gold-300 w-12 text-right">76 BPM</span>
-          </div>
-
         </div>
 
-        <!-- Right Score Zoom Bar & Interactive Guide -->
-        <div class="w-full max-w-[820px] flex items-center justify-between px-2 text-[11px] text-stone-400">
-          <div class="flex items-center gap-2">
-            <span class="text-gold-400 font-medium">💡 İpucu:</span>
-            <span>Notaları <strong>yukarı-aşağı sürükleyip</strong> çizgisini değiştirebilir, <strong>çift tıklayarak</strong> nota süresini değiştirebilirsiniz.</span>
+        <!-- Left Footer Bar -->
+        <div class="px-3.5 py-1.5 bg-wood-950/80 border-t border-gold-500/15 text-[10px] text-stone-400 flex items-center justify-between shrink-0">
+          <span>💡 Boşluktan tutup sürükleyerek (Pan) sayfada serbestçe gezinebilirsiniz.</span>
+          <span class="text-stone-500">Orijinal Tarama</span>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL: Digital Vector A4 Sheet Score -->
+      <div id="rightScoreCol" class="glass-card rounded-2xl border border-gold-500/25 flex flex-col overflow-hidden shadow-2xl">
+        
+        <!-- Sticky Header (Never Scrolls Away!) -->
+        <div class="sticky top-0 z-30 bg-wood-900/95 backdrop-blur-md px-3.5 py-2 border-b border-gold-500/20 flex items-center justify-between gap-2 shrink-0">
+          <div class="flex items-center gap-2 truncate">
+            <span class="text-sm">🎼</span>
+            <span class="text-xs font-cinzel font-bold text-gold-400">Vektörel Nota Kağıdı</span>
           </div>
+
+          <!-- Score Panel Zoom & Fit Controls -->
+          <div class="flex items-center gap-1 bg-wood-950 border border-gold-500/25 rounded-lg px-1.5 py-0.5 zoom-toolbar">
+            <button onclick="zoomScore(-0.1)" class="w-6 h-6 rounded hover:bg-wood-800 text-stone-300 font-bold text-sm flex items-center justify-center transition-all" title="Uzaklaş">−</button>
+            <span id="labelScoreZoom" class="text-[11px] font-mono font-bold text-gold-300 w-11 text-center">100%</span>
+            <button onclick="zoomScore(+0.1)" class="w-6 h-6 rounded hover:bg-wood-800 text-stone-300 font-bold text-sm flex items-center justify-center transition-all" title="Yakınlaş">+</button>
+            <button onclick="resetScoreZoom()" class="px-2 py-0.5 rounded text-[10px] bg-wood-850 hover:bg-wood-800 text-stone-300 font-medium transition-all ml-0.5" title="Sıfırla">100%</button>
+            <button onclick="fitScoreWidth()" class="px-2 py-0.5 rounded text-[10px] bg-wood-850 hover:bg-wood-800 text-gold-300 hover:text-white font-medium transition-all" title="Genişliğe Sığdır">Sığdır</button>
+          </div>
+        </div>
+
+        <!-- Score Preview Viewport (Scrollable & Draggable Pan) -->
+        <div id="scorePreviewContainer" class="flex-1 w-full h-[600px] lg:h-[750px] bg-wood-950/90 overflow-auto relative p-3 flex items-start justify-center cursor-grab select-none">
           
-          <!-- Score Panel Zoom Controls -->
-          <div class="flex items-center gap-1 bg-wood-900 border border-gold-500/25 rounded-lg px-1.5 py-0.5 zoom-toolbar">
-            <button onclick="zoomScore(-0.1)" class="w-6 h-6 rounded hover:bg-wood-800 text-stone-300 font-bold text-sm flex items-center justify-center transition-all" title="Uzaklaş">
-              −
-            </button>
-            <span id="labelScoreZoom" class="text-[11px] font-mono text-gold-300 w-10 text-center">100%</span>
-            <button onclick="zoomScore(+0.1)" class="w-6 h-6 rounded hover:bg-wood-800 text-stone-300 font-bold text-sm flex items-center justify-center transition-all" title="Yakınlaş">
-              +
-            </button>
-            <button onclick="resetScoreZoom()" class="px-1.5 py-0.5 rounded text-[10px] bg-wood-850 hover:bg-wood-800 text-stone-400 hover:text-white transition-all ml-0.5" title="Sıfırla">
-              100%
-            </button>
-          </div>
-        </div>
-
-        <!-- ================= THE A4 SHEET PAPER CONTAINER ================= -->
-        <div id="scoreZoomWrapper" class="w-full transition-transform duration-150 origin-top flex justify-center overflow-visible">
-          <div id="a4ScoreSheet" class="a4-sheet-container flex flex-col justify-between">
-            
-            <div>
+          <!-- Zoomable Paper Wrapper -->
+          <div id="scoreZoomWrapper" class="transition-transform duration-100 origin-top flex justify-center py-1">
+            <div id="a4ScoreSheet" class="a4-sheet-container flex flex-col space-y-3">
+              
               <!-- Header: Title & Subtitle -->
-              <div class="text-center border-b border-stone-300 pb-3 mb-3 sheet-header-block">
+              <div class="text-center border-b border-stone-300 pb-2 sheet-header-block select-text">
                 <h2 id="sheetTitle" class="text-2xl sm:text-3xl font-bold tracking-tight text-black" style="font-family: var(--title-font);">
                   BESTENİGÂR İLÂHİ
                 </h2>
@@ -614,7 +624,7 @@
                 </div>
 
                 <!-- Makam, Usul, Composer, Lyricist Top Bar -->
-                <div class="flex items-center justify-between text-xs text-stone-800 mt-3 pt-2 border-t border-stone-200/80 px-2 font-medium">
+                <div class="flex items-center justify-between text-xs text-stone-800 mt-2.5 pt-2 border-t border-stone-200/80 px-2 font-medium">
                   <!-- Left Details -->
                   <div class="text-left space-y-0.5">
                     <div><strong>Makamı:</strong> <span id="sheetMakam">Bestenigâr</span></div>
@@ -636,47 +646,53 @@
               </div>
 
               <!-- Vector Music Score Render Target (ABCjs Individual SVGs) -->
-              <div id="abcScoreTarget" class="w-full my-2 overflow-visible relative">
+              <div id="abcScoreTarget" class="w-full my-1 overflow-visible relative">
                 <!-- Rendered SVG will be placed here -->
               </div>
-            </div>
 
-            <!-- Bottom: Full Lyrics (Güfte) in Centered Poetry Format -->
-            <div id="sheetLyricsSection" class="mt-4 pt-3 border-t border-stone-300 text-center">
-              <h4 class="text-xs uppercase tracking-widest text-stone-500 font-bold mb-2">ESERİN GÜFTESİ</h4>
-              
-              <div id="sheetLyricsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs leading-relaxed text-stone-800" style="font-family: var(--lyrics-font);">
-                <!-- Verse 1 & 2 -->
-                <div class="space-y-3">
-                  <p>
-                    Ben yürürem yâne yâne<br>
-                    Aşk boyadı beni kane<br>
-                    Ne akîlem ne divâne<br>
-                    Gel gör beni aşk neyledi
-                  </p>
+              <!-- Bottom: Full Lyrics (Güfte) in Centered Poetry Format -->
+              <div id="sheetLyricsSection" class="pt-3 border-t border-stone-300 text-center select-text">
+                <h4 class="text-xs uppercase tracking-widest text-stone-500 font-bold mb-2">ESERİN GÜFTESİ</h4>
+                
+                <div id="sheetLyricsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs leading-relaxed text-stone-800" style="font-family: var(--lyrics-font);">
+                  <!-- Verse 1 & 2 -->
+                  <div class="space-y-3">
+                    <p>
+                      Ben yürürem yâne yâne<br>
+                      Aşk boyadı beni kane<br>
+                      Ne akîlem ne divâne<br>
+                      Gel gör beni aşk neyledi
+                    </p>
+                  </div>
+
+                  <!-- Verse 3 & 4 -->
+                  <div class="space-y-3">
+                    <p>
+                      Ben Yunus'u bîçâreyim<br>
+                      Dost elinden âvâreyim<br>
+                      Baştan ayağa yâreyim<br>
+                      Gel gör beni aşk neyledi
+                    </p>
+                  </div>
                 </div>
 
-                <!-- Verse 3 & 4 -->
-                <div class="space-y-3">
-                  <p>
-                    Ben Yunus'u bîçâreyim<br>
-                    Dost elinden âvâreyim<br>
-                    Baştan ayağa yâreyim<br>
-                    Gel gör beni aşk neyledi
-                  </p>
+                <!-- Footer Conductor / Archival Stamp -->
+                <div class="mt-5 pt-2 border-t border-stone-200 text-[10px] text-stone-500 flex items-center justify-between">
+                  <span>Çorum Belediyesi Türk Sanat Müziği Korosu Arşivi</span>
+                  <span>Şef: Atakan Tetik</span>
                 </div>
               </div>
 
-              <!-- Footer Conductor / Archival Stamp -->
-              <div class="mt-6 pt-2 border-t border-stone-200 text-[10px] text-stone-500 flex items-center justify-between">
-                <span>Çorum Belediyesi Türk Sanat Müziği Korosu Arşivi</span>
-                <span>Şef: Atakan Tetik</span>
-              </div>
             </div>
-
           </div>
+
         </div>
 
+        <!-- Right Footer Bar -->
+        <div class="px-3.5 py-1.5 bg-wood-950/80 border-t border-gold-500/15 text-[10px] text-stone-400 flex items-center justify-between shrink-0">
+          <span>💡 Notaları yukarı-aşağı sürükleyebilir, boşluktan tutup sayfayı kaydırabilirsiniz.</span>
+          <span class="text-gold-400 font-cinzel">A4 Vektörel Baskı</span>
+        </div>
       </div>
 
     </div>
@@ -954,10 +970,35 @@
 
   <!-- ================= JAVASCRIPT LOGIC ================= -->
   <script>
+    // Firebase Configuration & Key Sync
+    const firebaseConfig = {
+      apiKey: "AIzaSyDb53nwt-uwiXuQ0qhjE7UG-Z0M0W1zeFE",
+      authDomain: "notdefteri-74cf6.firebaseapp.com",
+      databaseURL: "https://notdefteri-74cf6-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "notdefteri-74cf6",
+      storageBucket: "notdefteri-74cf6.firebasestorage.app",
+      messagingSenderId: "524573457132",
+      appId: "1:524573457132:web:ad90e66eb123e4210a4fa6"
+    };
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+
+    let cloudGeminiKey = "";
+    db.ref("KEKEC-KORO/config/gemini_key").on("value", (snap) => {
+      const val = snap.val();
+      if (val && typeof val === "string" && val.trim().length > 15) {
+        cloudGeminiKey = val.trim();
+        activeApiKey = cloudGeminiKey;
+      }
+    });
+
     // Configuration & State
     function resolveGeminiKey() {
       const stored = localStorage.getItem("gemini_api_key");
-      if (stored) return stored;
+      if (stored && stored.trim().length > 15) return stored.trim();
+      if (cloudGeminiKey && cloudGeminiKey.trim().length > 15) return cloudGeminiKey.trim();
       const k = "QVEuQWI4Uk42SjlLcWtDdlVCSXhzeDFMdDBjYWZ3ckU5VzR5X2E0dnBXQ0hCdlZZWURjYUE=";
       if (!k || k.startsWith("__")) return "";
       try { return (k.startsWith("AIza") ? k : atob(k)); } catch(e) { return k; }
@@ -1132,13 +1173,35 @@ Gel gör beni aşk neyledi.`
       initDropzone();
       renderScore();
       applyTypographySettings();
+      initPanNavigation();
+      setTimeout(fitScoreWidth, 250);
     });
+
+    // Helper to strip Title/Composer headers from ABCjs input so ABCjs doesn't create empty SVGs
+    function prepareAbcForRendering(rawAbc) {
+      if (!rawAbc) return "";
+      const lines = rawAbc.split('\n');
+      const filtered = lines.filter(l => {
+        const trimmed = l.trim();
+        return !trimmed.startsWith('T:') && !trimmed.startsWith('C:') && !trimmed.startsWith('O:') && !trimmed.startsWith('A:');
+      });
+      return filtered.join('\n');
+    }
 
     // ================= RENDER VECTOR SCORE WITH ABCJS =================
     function renderScore() {
       // 1. Update Sheet DOM text fields
       document.getElementById("sheetTitle").textContent = currentScore.title || "Eser Adı";
-      document.getElementById("sheetSubtitle").textContent = currentScore.subtitle || "";
+      
+      const subEl = document.getElementById("sheetSubtitle");
+      if (currentScore.subtitle && currentScore.subtitle.trim()) {
+        subEl.textContent = currentScore.subtitle.trim();
+        subEl.classList.remove("hidden");
+      } else {
+        subEl.textContent = "";
+        subEl.classList.add("hidden");
+      }
+
       document.getElementById("sheetMakam").textContent = currentScore.makam || "-";
       document.getElementById("sheetUsul").textContent = currentScore.usul || "-";
       document.getElementById("sheetForm").textContent = currentScore.form || "-";
@@ -1169,14 +1232,25 @@ Gel gör beni aşk neyledi.`
 
       // 3. Render Vector ABCjs SVG with oneSvgPerLine for un-sliced page breaks
       if (window.ABCJS) {
-        visualTuneObj = ABCJS.renderAbc("abcScoreTarget", currentScore.abc, {
+        const renderableAbc = prepareAbcForRendering(currentScore.abc);
+        visualTuneObj = ABCJS.renderAbc("abcScoreTarget", renderableAbc, {
           oneSvgPerLine: true,
           responsive: "resize",
-          staffwidth: 680,
+          staffwidth: 720,
           add_classes: true,
           selectionColor: "#d4af37",
           clickListener: onAbcElementClick
         });
+
+        // Eliminate any orphan empty header SVG generated by ABCjs
+        const container = document.getElementById("abcScoreTarget");
+        if (container) {
+          container.querySelectorAll("svg").forEach(svg => {
+            if (!svg.querySelector(".abcjs-staff") && !svg.querySelector(".abcjs-note") && !svg.querySelector(".abcjs-rest")) {
+              svg.remove();
+            }
+          });
+        }
 
         // Attach Interactive Drag & Double-Click Handlers to SVG Notes
         setupInteractiveSvgNotes();
@@ -1491,37 +1565,117 @@ Gel gör beni aşk neyledi.`
       return m;
     }
 
-    // ================= ZOOM CONTROLLERS (INDEPENDENT) =================
+    // ================= ZOOM & PAN CONTROLLERS =================
     function zoomOrig(delta) {
-      origZoomLevel = Math.max(0.4, Math.min(3.0, origZoomLevel + delta));
+      origZoomLevel = Math.max(0.3, Math.min(3.5, Math.round((origZoomLevel + delta) * 100) / 100));
       applyOrigZoom();
     }
 
     function resetOrigZoom() {
       origZoomLevel = 1.0;
       applyOrigZoom();
+      const c = document.getElementById("origPreviewContainer");
+      if (c) { c.scrollLeft = 0; c.scrollTop = 0; }
+    }
+
+    function fitOrigWidth() {
+      const container = document.getElementById("origPreviewContainer");
+      const img = document.getElementById("origImage");
+      const canvas = document.getElementById("origCanvas");
+      const mediaEl = (!img.classList.contains("hidden")) ? img : (!canvas.classList.contains("hidden")) ? canvas : null;
+      if (container && mediaEl && (mediaEl.naturalWidth || mediaEl.width)) {
+        const mediaWidth = mediaEl.naturalWidth || mediaEl.width || 800;
+        const available = container.clientWidth - 40;
+        origZoomLevel = Math.max(0.3, Math.min(3.0, Math.round((available / mediaWidth) * 100) / 100));
+      } else {
+        origZoomLevel = 1.0;
+      }
+      applyOrigZoom();
     }
 
     function applyOrigZoom() {
       const wrapper = document.getElementById("origZoomWrapper");
-      wrapper.style.transform = `scale(${origZoomLevel})`;
-      document.getElementById("labelOrigZoom").textContent = `${Math.round(origZoomLevel * 100)}%`;
+      if (wrapper) wrapper.style.transform = `scale(${origZoomLevel})`;
+      const lbl = document.getElementById("labelOrigZoom");
+      if (lbl) lbl.textContent = `${Math.round(origZoomLevel * 100)}%`;
     }
 
     function zoomScore(delta) {
-      scoreZoomLevel = Math.max(0.5, Math.min(2.5, scoreZoomLevel + delta));
+      scoreZoomLevel = Math.max(0.4, Math.min(3.0, Math.round((scoreZoomLevel + delta) * 100) / 100));
       applyScoreZoom();
     }
 
     function resetScoreZoom() {
       scoreZoomLevel = 1.0;
       applyScoreZoom();
+      const c = document.getElementById("scorePreviewContainer");
+      if (c) { c.scrollLeft = 0; c.scrollTop = 0; }
+    }
+
+    function fitScoreWidth() {
+      const container = document.getElementById("scorePreviewContainer");
+      if (container) {
+        const available = container.clientWidth - 40;
+        scoreZoomLevel = Math.max(0.4, Math.min(2.5, Math.round((available / 800) * 100) / 100));
+      } else {
+        scoreZoomLevel = 0.85;
+      }
+      applyScoreZoom();
     }
 
     function applyScoreZoom() {
       const sheet = document.getElementById("a4ScoreSheet");
-      sheet.style.transform = `scale(${scoreZoomLevel})`;
-      document.getElementById("labelScoreZoom").textContent = `${Math.round(scoreZoomLevel * 100)}%`;
+      if (sheet) sheet.style.transform = `scale(${scoreZoomLevel})`;
+      const lbl = document.getElementById("labelScoreZoom");
+      if (lbl) lbl.textContent = `${Math.round(scoreZoomLevel * 100)}%`;
+    }
+
+    // Interactive Drag-to-Pan Navigation for Both Panels
+    function initPanNavigation() {
+      enableDragToPan("origPreviewContainer");
+      enableDragToPan("scorePreviewContainer");
+    }
+
+    function enableDragToPan(containerId) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+
+      let isDown = false;
+      let startX = 0, startY = 0;
+      let startScrollLeft = 0, startScrollTop = 0;
+
+      el.addEventListener("mousedown", (e) => {
+        // Do not drag if user is clicking a button, select, note, or input
+        if (e.target.closest("button, input, select, textarea, .abcjs-note, .abcjs-rest, .quick-palette")) {
+          return;
+        }
+        if (e.button !== 0) return; // Only main left click
+        isDown = true;
+        el.classList.add("cursor-grabbing");
+        el.classList.remove("cursor-grab");
+        startX = e.pageX - el.offsetLeft;
+        startY = e.pageY - el.offsetTop;
+        startScrollLeft = el.scrollLeft;
+        startScrollTop = el.scrollTop;
+      });
+
+      window.addEventListener("mouseup", () => {
+        if (!isDown) return;
+        isDown = false;
+        el.classList.remove("cursor-grabbing");
+        el.classList.add("cursor-grab");
+      });
+
+      el.addEventListener("mousemove", (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const currentX = e.pageX - el.offsetLeft;
+        const currentY = e.pageY - el.offsetTop;
+        const walkX = (currentX - startX);
+        const walkY = (currentY - startY);
+        el.scrollLeft = startScrollLeft - walkX;
+        el.scrollTop = startScrollTop - walkY;
+      });
     }
 
     // ================= TOGGLE LYRICS VISIBILITY =================
@@ -1679,30 +1833,45 @@ Gel gör beni aşk neyledi.`
 
       setScanningState(true, "Gemini Flash Nota Kağıdını Derin İnceliyor...", "Dizek çizgileri, notaların konumu, diyezler, esler, bağlar ve heceler taranıyor...");
 
-      const promptText = `Sen uzman bir Türk Sanat Müziği ve klasik nota matbaası araştırmacısısın.
-Eklenen nota kağıdını çok derin ve detaylı incele. Bu kağıt kötü taranmış, fotokopi, eğri veya lekelenmiş olabilir.
-Amacımız bu notayı jilet gibi net, standart ABC müzik notasyonunda vektörel hale getirmektir.
+      const promptText = `Sen Türk Sanat Müziği ve klasik nota matbaası alanında dünyanın en yetkin musiki araştırmacısısın.
+Eklenen nota kağıdını çok derin ve detaylı incele. Bu kağıt kötü taranmış, fotokopi, eğri veya lekeli olabilir.
+Amacımız bu notayı jilet gibi net, profesyonel kalitede standart ABC müzik notasyonunda vektörel hale getirmektir.
 
-Aşağıdaki JSON şablonunda eksiksiz cevap ver:
+DİZEK (SATIR) ÇÖZÜMLEME KURALLARI - HAYATİ ÖNEM TAŞIR:
+1. TÜM DİZEKLERİN (SATIRLARIN) HEPSİNİ ÇÖZÜMLE:
+   - Orijinal sayfadaki EN ÜST DİZEKTEN EN ALT DİZEĞE KADAR KAÇ TANE NOTA ÇİZGİSİ (DİZEK) VARSA HEPSİNİ (Örn: 5, 6, 7, 8 dizek) sırasıyla eksiksiz aktar.
+   - ASLA SADECE 1 DİZEK YAZIP BIRAKMA! Eserin tamamını, tüm dizeklerini, ölçülerini ve son ölçüdeki bitiş çift çizgisine (|]) kadar olan tüm kısımları yaz. Orijinal belgede 7 dizek varsa ABC çıktısında da 7 ayrı dizek satırı bulunmalıdır.
+   - Her dizek ABC kodunda ayrı bir satır olarak yer almalıdır.
+2. SÖZLER VE HECELER (w:):
+   - Sözlü dizeklerin hemen altına "w:" satırı ekle. Her notanın altına denk gelen heceyi tire (-) ile ayırarak yaz (Örn: "w: Yıl-dız-lar sü-zül-müş in-ci-ler gi-bi |").
+   - Enstrümantal aranağme (saz payı) dizeklerine "w:" ekleme, sadece notaları yaz.
+3. MAKAM VE USÛL DOĞRULUĞU:
+   - Makam donanımını (örneğin Nihavend için K:Bb veya K:Gm) ve usûl ölçüsünü (örneğin Aksak için M:9/8, Düyek için M:4/4, Semai için M:6/8) doğru belirle.
+   - Diyezler için '^' (Örn: '^G' Sol diyez, '^F' Fa diyez), bemoller için '_' (Örn: '_B' Si bemol), natüreller için '=' kullan.
+   - Bağlar için yay parantez ( ) kullan.
+   - Dolaplar için [1 ... :| ve [2 ... |] kullan. Bitiş için |] kullan. Asla 'FINE' yazma.
+4. METİN BİLGİLERİ (KÜNYE):
+   - title: Belgedeki eser adı (Büyük harflerle, Örn: "NİHAVEND ŞARKI").
+   - subtitle: Eğer belgede ayrı bir alt başlık veya ilk mısra adı yoksa BOŞ STRING ("") ver. KAFANDAN BAŞKA ESERİN SÖZLERİNİ (örneğin 'Ben yürürem yâne yâne' gibi) KESİNLİKLE UYDURMA!
+   - makam: Belgedeki makam (Örn: "Nihavend").
+   - usul: Belgedeki usûl (Örn: "Aksak").
+   - form: Belgedeki form (Örn: "Şarkı").
+   - composer: Belgedeki bestekâr (Örn: "Burhan Durucu").
+   - lyricist: Belgedeki güftekâr (Örn: "Yalçın Benlican").
+   - fullLyrics: Eserin tüm güftesini / şiirini kıtalar halinde düzgün Türkçe ile yaz.
+
+Aşağıdaki JSON şablonunda geçerli bir JSON döndür:
 {
-  "title": "Eserin Adı (Büyük harflerle düzgün Türkçe)",
-  "subtitle": "Varsa alt başlığı veya eserin ilk mısrası",
-  "makam": "Makamı (Örn: Nevâ, Bestenigâr, Rast, Nihavend, Hicaz vb.)",
-  "usul": "Usûlü (Örn: Düyek, Sofyan, Aksak, Semai vb.)",
-  "form": "Formu (Şarkı, İlâhi, Peşrev vb.)",
+  "title": "Eser Adı",
+  "subtitle": "",
+  "makam": "Makamı",
+  "usul": "Usûlü",
+  "form": "Formu",
   "composer": "Bestekârı",
   "lyricist": "Güftekârı",
-  "abc": "Standart ABC notasyonu (X:1, T:, C:, M:4/4, L:1/8, Q:1/4=76, K: ile başlayan).",
-  "fullLyrics": "Eserin tüm güftesi / şiiri (kıtalar halinde düzgün Türkçe)"
-}
-
-ÖNEMLİ MUSİKİ & ABC KURALLARI:
-1. Notaların süresi ve bağları orijinal kağıtla birebir uyuşmalıdır. Noktalı sekizlik ve onaltılık ikilileri parantez içinde bağlayarak yaz (Örn: '(d>c d>c)' veya '(B c)').
-2. Diyezler için '^' (Örn: '^G' Sol diyez, '^F' Fa diyez, '^c' Do diyez), bemoller için '_' (Örn: '_B' Si bemol), natüreller için '=' (Örn: '=B' Si natürel) kullan.
-3. Es ve sus işaretleri için 'z' veya 'z2' (dörtlük es) kullan.
-4. Eserin başında veya sonunda Dal Segno işareti varsa '!segno!' kullan. Bitiş için çift çizgi '|]' kullan. Asla 'FINE' yazma.
-5. Her dizeğin altında 'w:' satırında notaların altına hecelenmiş güfte sözlerini (tire ile hecelere ayrılmış olarak) birebir yerleştir.
-6. Sadece geçerli bir JSON döndür. Ek açıklama yazma.`;
+  "abc": "Standart ABC notasyonu (X:1, M:..., L:1/8, Q:1/4=..., K:... ile başlayan ve TÜM dizekleri içeren tam notasyon)",
+  "fullLyrics": "Tüm güfte sözleri"
+}`;
 
       const requestPayload = {
         contents: [
@@ -1719,7 +1888,12 @@ Aşağıdaki JSON şablonunda eksiksiz cevap ver:
               }
             ]
           }
-        ]
+        ],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 8192,
+          responseMimeType: "application/json"
+        }
       };
 
       let success = false;
@@ -1759,15 +1933,17 @@ Aşağıdaki JSON şablonunda eksiksiz cevap ver:
 
           const parsed = JSON.parse(jsonStr.trim());
 
-          if (parsed.title) currentScore.title = parsed.title;
-          if (parsed.subtitle) currentScore.subtitle = parsed.subtitle;
-          if (parsed.makam) currentScore.makam = parsed.makam;
-          if (parsed.usul) currentScore.usul = parsed.usul;
-          if (parsed.form) currentScore.form = parsed.form;
-          if (parsed.composer) currentScore.composer = parsed.composer;
-          if (parsed.lyricist) currentScore.lyricist = parsed.lyricist;
-          if (parsed.abc) currentScore.abc = parsed.abc;
-          if (parsed.fullLyrics) currentScore.fullLyrics = parsed.fullLyrics;
+          currentScore = {
+            title: parsed.title || "Eser Adı",
+            subtitle: parsed.subtitle || "",
+            makam: parsed.makam || "-",
+            usul: parsed.usul || "-",
+            form: parsed.form || "-",
+            composer: parsed.composer || "-",
+            lyricist: parsed.lyricist || "-",
+            abc: parsed.abc || "",
+            fullLyrics: parsed.fullLyrics || ""
+          };
 
           originalScoreBackup = JSON.parse(JSON.stringify(currentScore));
 
@@ -1784,13 +1960,13 @@ Aşağıdaki JSON şablonunda eksiksiz cevap ver:
       setScanningState(false);
 
       if (!success) {
-        showToast(lastErrorMessage || "Yapay zekâ analizi tamamlanamadı. Yedek şablon yüklendi.", "error");
+        showToast(lastErrorMessage || "Yapay zekâ analizi tamamlanamadı. Lütfen API anahtarınızı ve internet bağlantınızı kontrol ediniz.", "error");
         if (lastErrorMessage && lastErrorMessage.includes("403")) {
           openApiModal();
         }
         if (filename.toLowerCase().includes("ornek2")) {
           loadBenchmarkPreset("ornek2");
-        } else {
+        } else if (filename.toLowerCase().includes("ornek1")) {
           loadBenchmarkPreset("ornek1");
         }
       }
@@ -1918,8 +2094,13 @@ Aşağıdaki JSON şablonunda eksiksiz cevap ver:
       }
       activeApiKey = val;
       localStorage.setItem("gemini_api_key", activeApiKey);
+      try {
+        db.ref("KEKEC-KORO/config/gemini_key").set(val);
+      } catch(e) {
+        console.warn("Cloud key save warning:", e);
+      }
       closeApiModal();
-      showToast("Gemini API anahtarı kaydedildi! 🔑", "success");
+      showToast("Gemini API anahtarı kaydedildi ve tüm koroyla senkronize edildi! 🔑", "success");
     }
 
     // ================= ALGORITHMIC WEB AUDIO SYNTH PLAYER =================
