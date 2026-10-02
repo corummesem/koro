@@ -68,6 +68,7 @@
   <script src="catalog_pop.js" charset="UTF-8" defer></script>
   <script src="catalog_thm.js" charset="UTF-8" defer></script>
   <script src="catalog_tsm.js" charset="UTF-8" defer></script>
+  <script src="catalog_gg.js" charset="UTF-8" defer></script>
 
   <!-- Firebase Compat SDK (Works seamlessly over file://, http://, https://) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -459,7 +460,7 @@
             <span>📚</span> Geniş Dijital Nota Kataloğu
           </h2>
           <p class="text-xs sm:text-sm text-stone-400 mt-1">
-            Türk Sanat Müziği, Türk Halk Müziği ve Popüler Müzik repertuvarından binlerce PDF nota belgesi.
+            Türk Sanat Müziği, Türk Halk Müziği ve Popüler Müzik repertuvarından binlerce PDF nota belgesi. <span class="text-gold-500/80">(gitaregitim.net arşivi dâhil)</span>
           </p>
         </div>
       </div>
@@ -473,7 +474,7 @@
         </span>
         <input type="text" 
                id="catalogSearchInput" 
-               placeholder="30.000+ eser içinde ara: Şarkı adı, makam, bestekâr, usûl veya form..." 
+               placeholder="35.000+ eser içinde ara: Şarkı adı, makam, bestekâr, usûl, ton veya kategori..." 
                class="w-full pl-10 pr-10 py-3 rounded-xl bg-wood-900/90 border border-gold-500/30 text-stone-100 placeholder-stone-500 text-sm focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/50 transition-all">
         <button id="btnCatalogClearSearch" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-white">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -494,6 +495,16 @@
         <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium border border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400 shrink-0 transition-all" data-cat="POP">
           Popüler Müzik (POP)
         </button>
+      </div>
+
+      <!-- Alt Kategori (kaynaktaki özgün kategori) -->
+      <div class="flex items-center gap-2 flex-wrap mt-3">
+        <label for="catalogSubCat" class="text-[11px] text-stone-400 shrink-0">Alt Kategori:</label>
+        <select id="catalogSubCat"
+                class="flex-1 min-w-[190px] px-3 py-2 rounded-xl bg-wood-900/90 border border-gold-500/30 text-stone-200 text-xs sm:text-sm focus:outline-none focus:border-gold-400 transition-all">
+          <option value="all">Tüm Alt Kategoriler</option>
+        </select>
+        <span id="catalogSubCatCount" class="text-[11px] text-stone-500 shrink-0"></span>
       </div>
     </div>
 
@@ -978,6 +989,7 @@
     // External Catalog State
     let externalCatalog = window.EXTERNAL_NOTA_CATALOG || [];
     let catalogFilterCat = "all";
+    let catalogFilterSubCat = "all";
     let catalogSearchQuery = "";
     let catalogDisplayLimit = 60;
 
@@ -1420,6 +1432,9 @@
         if (catalogFilterCat === 'THM' && item.cat !== 'THM') return false;
         if (catalogFilterCat === 'POP' && item.cat !== 'POP' && item.cat !== 'POPÜLER') return false;
 
+        // Alt kategori (kaynaktaki özgün kategori) filter
+        if (catalogFilterSubCat !== 'all' && (item.sc || '') !== catalogFilterSubCat) return false;
+
         // Search Query
         if (catalogSearchQuery.trim()) {
           const q = trNormalize(catalogSearchQuery);
@@ -1429,7 +1444,9 @@
           const matchUsul = trNormalize(item.u).includes(q);
           const matchForm = trNormalize(item.f).includes(q);
           const matchCat = trNormalize(item.cat).includes(q);
-          return matchTitle || matchMakam || matchBeste || matchUsul || matchForm || matchCat;
+          const matchSub = trNormalize(item.sc).includes(q);
+          const matchTon = trNormalize(item.k).includes(q);
+          return matchTitle || matchMakam || matchBeste || matchUsul || matchForm || matchCat || matchSub || matchTon;
         }
         return true;
       });
@@ -1459,12 +1476,12 @@
             <div>
               <div class="flex items-center justify-between gap-2 mb-2">
                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-wood-950/80 text-gold-300 border border-gold-500/30">
-                  <span>🎵</span> ${escapeHtml(item.m || 'TSM')}
+                  <span>🎵</span> ${escapeHtml(item.m || item.k || item.sc || item.f || 'Eser')}
                 </span>
                 <div class="flex items-center gap-1.5">
-                  <span class="text-[10px] text-stone-400 bg-wood-900/90 px-2 py-0.5 rounded border border-gold-500/15 font-medium">
-                    ${escapeHtml(item.f || 'Eser')}
-                  </span>
+                  ${item.f ? `<span class="text-[10px] text-stone-400 bg-wood-900/90 px-2 py-0.5 rounded border border-gold-500/15 font-medium">
+                    ${escapeHtml(item.f)}
+                  </span>` : ''}
                   <span class="text-[10px] text-gold-400/90 bg-wood-950/80 px-2 py-0.5 rounded border border-gold-500/20 font-medium">
                     ${escapeHtml(item.cat || 'TSM')}
                   </span>
@@ -1475,17 +1492,37 @@
                 ${escapeHtml(item.t)}
               </h4>
 
+              ${item.sc ? `<div class="mt-1">
+                <span class="text-[10px] text-gold-300/80 bg-wood-950/60 px-2 py-0.5 rounded border border-gold-500/15 font-medium">
+                  ${escapeHtml(item.sc)}
+                </span>
+              </div>` : ''}
+
               <div class="space-y-1 mt-2 text-xs text-stone-300">
                 <div class="flex items-center gap-1.5 truncate">
                   <span class="text-gold-500/70">🎼</span>
                   <span class="text-stone-400 text-[11px]">Beste:</span>
                   <span class="text-stone-200 truncate">${escapeHtml(item.b || 'Bilinmiyor')}</span>
                 </div>
+                ${item.g ? `
+                  <div class="flex items-center gap-1.5 truncate">
+                    <span class="text-gold-500/70">🎤</span>
+                    <span class="text-stone-400 text-[11px]">Sanatçı:</span>
+                    <span class="text-stone-300 truncate">${escapeHtml(item.g)}</span>
+                  </div>
+                ` : ''}
                 ${item.u ? `
                   <div class="flex items-center gap-1.5 truncate">
                     <span class="text-gold-500/70">🥁</span>
                     <span class="text-stone-400 text-[11px]">Usûl:</span>
                     <span class="text-stone-300 truncate">${escapeHtml(item.u)}</span>
+                  </div>
+                ` : ''}
+                ${item.k ? `
+                  <div class="flex items-center gap-1.5 truncate">
+                    <span class="text-gold-500/70">🎚️</span>
+                    <span class="text-stone-400 text-[11px]">Ton:</span>
+                    <span class="text-stone-300 truncate">${escapeHtml(item.k)}</span>
                   </div>
                 ` : ''}
               </div>
@@ -1497,6 +1534,9 @@
               </span>
 
               <div class="flex items-center gap-1.5">
+                ${item.pg ? `<a href="${escapeHtml(item.pg)}" target="_blank" rel="noopener noreferrer" title="Kaynak sayfayı aç" class="px-2 py-1.5 rounded-xl bg-wood-850 hover:bg-wood-800 text-stone-300 hover:text-gold-300 border border-gold-500/20 text-xs font-medium flex items-center gap-1 transition-all">
+                  <span>Kaynak</span>
+                </a>` : ''}
                 <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-wood-850 hover:bg-wood-800 text-stone-200 hover:text-gold-300 border border-gold-500/20 text-xs font-medium flex items-center gap-1 transition-all">
                   <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                   <span>Görüntüle</span>
@@ -1519,6 +1559,50 @@
       }
     }
 
+    // Alt kategori seçeneklerini veriye göre doldur (ana kategoriye göre daraltılır)
+    function refreshSubCategoryOptions() {
+      const sel = document.getElementById("catalogSubCat");
+      if (!sel) return;
+      const counts = new Map();
+      for (const item of externalCatalog) {
+        if (!item.sc) continue;
+        if (catalogFilterCat === 'TSM' && item.cat !== 'TSM') continue;
+        if (catalogFilterCat === 'THM' && item.cat !== 'THM') continue;
+        if (catalogFilterCat === 'POP' && item.cat !== 'POP' && item.cat !== 'POPÜLER') continue;
+        counts.set(item.sc, (counts.get(item.sc) || 0) + 1);
+      }
+      const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+
+      const prev = catalogFilterSubCat;
+      sel.innerHTML = '<option value="all">Tüm Alt Kategoriler</option>' +
+        sorted.map(([name, cnt]) =>
+          `<option value="${escapeHtml(name)}">${escapeHtml(name)} (${cnt.toLocaleString('tr-TR')})</option>`
+        ).join('');
+
+      if (prev !== 'all' && counts.has(prev)) {
+        sel.value = prev;
+      } else {
+        catalogFilterSubCat = 'all';
+        sel.value = 'all';
+      }
+      updateSubCatCount();
+    }
+
+    function updateSubCatCount() {
+      const el = document.getElementById("catalogSubCatCount");
+      if (!el) return;
+      if (catalogFilterSubCat === 'all') { el.textContent = ''; return; }
+      let n = 0;
+      for (const item of externalCatalog) {
+        if ((item.sc || '') !== catalogFilterSubCat) continue;
+        if (catalogFilterCat === 'TSM' && item.cat !== 'TSM') continue;
+        if (catalogFilterCat === 'THM' && item.cat !== 'THM') continue;
+        if (catalogFilterCat === 'POP' && item.cat !== 'POP' && item.cat !== 'POPÜLER') continue;
+        n++;
+      }
+      el.textContent = n.toLocaleString('tr-TR') + ' eser';
+    }
+
     window.loadMoreCatalog = function() {
       playTapSound();
       catalogDisplayLimit += 60;
@@ -1537,10 +1621,24 @@
             p.className = "cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium border border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400 shrink-0 transition-all";
           }
         });
+        catalogFilterSubCat = 'all';
+        refreshSubCategoryOptions();
         catalogDisplayLimit = 60;
         renderCatalog();
       });
     });
+
+    // Alt kategori (kaynaktaki özgün kategori) filter listener
+    const catalogSubCatSelect = document.getElementById("catalogSubCat");
+    if (catalogSubCatSelect) {
+      catalogSubCatSelect.addEventListener("change", (e) => {
+        playTapSound();
+        catalogFilterSubCat = e.target.value;
+        updateSubCatCount();
+        catalogDisplayLimit = 60;
+        renderCatalog();
+      });
+    }
 
     // Catalog search
     const catalogSearchInput = document.getElementById("catalogSearchInput");
@@ -1575,6 +1673,7 @@
       if (elBadge) elBadge.textContent = countStr;
       const elStat = document.getElementById("statTotalCatalog");
       if (elStat) elStat.textContent = countStr;
+      refreshSubCategoryOptions();
       if (activeTab === 'catalog') {
         renderCatalog();
       }

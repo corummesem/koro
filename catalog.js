@@ -36,6 +36,10 @@
         let cat = row[7] || "TSM";
         if (cat === "POPÃœLER") cat = "POP";
 
+        // Optional extra fields (present only in some catalogs, e.g. catalog_gg.js):
+        //   row[8]  = alt kategori (kaynaktaki özgün kategori)
+        //   row[9]  = kaynak sayfa adresi
+        //   row[10] = ton / gam
         this.items.push({
           t: row[0] || "",
           m: row[1] || "",
@@ -44,7 +48,10 @@
           b: row[4] || "",
           g: row[5] || "",
           url: url,
-          cat: cat
+          cat: cat,
+          sc: row[8] || "",
+          pg: row[9] || "",
+          k: row[10] || ""
         });
       }
       this.notify();
