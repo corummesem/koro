@@ -1,0 +1,2280 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Çorum Belediyesi Türk Sanat Müziği Korosu | Dijital Nota Arşivi & Kütüphane</title>
+  
+  <!-- PWA & Mobile Web App Meta -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TSM Korosu">
+  <meta name="theme-color" content="#140d09">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="Çorum Belediyesi Türk Sanat Müziği Korosu Nota Arşivi ve Geniş Dijital Nota Kütüphanesi - Şef: Atakan Tetik">
+
+  <!-- Google Fonts: Classical Serif & Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,900;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            wood: {
+              950: '#0e0805',
+              900: '#140d09', // Exact color matching wall.jpg bottom edge
+              850: '#1a120c',
+              800: '#231811',
+              700: '#2f2118',
+              600: '#3e2c21',
+            },
+            gold: {
+              300: '#fef08a',
+              400: '#facc15',
+              500: '#d4af37',
+              600: '#b89224',
+              700: '#947217',
+              light: '#f6e4a6',
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            cinzel: ['"Cinzel"', 'serif'],
+            poetic: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- PDF.js for Universal Cross-Platform Sheet Rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+
+  <!-- External Large Catalog Data (2.500+ Eser: ŞahaNey & NotaArşivleri) -->
+  <script src="catalog.js" charset="UTF-8"></script>
+
+  <!-- Firebase Compat SDK (Works seamlessly over file://, http://, https://) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <style>
+    /* Ottoman-Modern Classical Music Theme */
+    :root {
+      --bg-wood: #140d09;
+      --gold-primary: #d4af37;
+    }
+
+    body {
+      background-color: #140d09;
+      color: #f5eedb;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      overflow-x: hidden;
+    }
+
+    /* Fixed Atmospheric Background Wallpaper (wall.jpg) */
+    .bg-wallpaper-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image: url('wall.jpg');
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+      opacity: 0.15;
+      filter: blur(1px);
+    }
+
+    /* Seamless Cover Banner Fade Effect into #140d09 */
+    .hero-banner-container {
+      position: relative;
+      width: 100%;
+      background-color: #140d09;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    .hero-banner-img {
+      width: 100%;
+      max-height: 480px;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+      /* Dual gradient mask to smoothly dissolve image into background */
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0.85) 75%, rgba(0,0,0,0) 100%);
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0.85) 75%, rgba(0,0,0,0) 100%);
+    }
+
+    .hero-gradient-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(to bottom, transparent 35%, rgba(20, 13, 9, 0.45) 65%, #140d09 100%);
+    }
+
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #fff7d6 0%, #d4af37 50%, #aa8214 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Glassmorphic Wood Cards */
+    .glass-card {
+      background: rgba(26, 18, 12, 0.86);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(212, 175, 55, 0.48);
+      box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.65), 0 0 16px rgba(212, 175, 55, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* AI Scanning Laser Effect */
+    @keyframes laserScan {
+      0% { top: 0%; opacity: 0.9; }
+      50% { top: 96%; opacity: 1; }
+      100% { top: 0%; opacity: 0.9; }
+    }
+
+    .ai-laser-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #38bdf8, #d4af37, #38bdf8, transparent);
+      box-shadow: 0 0 14px #38bdf8, 0 0 6px #d4af37;
+      animation: laserScan 2s infinite ease-in-out;
+    }
+
+    /* Luminous Pulse Glow for Upload Icon */
+    @keyframes luminousPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.75), 0 0 20px rgba(212, 175, 55, 0.45);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 0 0 16px rgba(212, 175, 55, 0), 0 0 35px rgba(212, 175, 55, 0.8);
+        transform: scale(1.06);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0), 0 0 20px rgba(212, 175, 55, 0.45);
+        transform: scale(1);
+      }
+    }
+    .luminous-pulse {
+      animation: luminousPulse 2.2s infinite ease-in-out;
+    }
+
+    /* Pin Shake Animation */
+    @keyframes pinShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .shake-error {
+      animation: pinShake 0.4s ease-in-out;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #140d09;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(212, 175, 55, 0.3);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(212, 175, 55, 0.6);
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-24 md:pb-12 text-[#f5eedb] selection:bg-gold-500 selection:text-black relative">
+
+  <!-- ================= FIXED BACKGROUND WALLPAPER (wall.jpg) ================= -->
+  <div class="bg-wallpaper-layer"></div>
+
+  <!-- ================= TOP TICKER & QUICK ACTIONS ================= -->
+  <header class="sticky top-0 z-40 bg-wood-950/90 backdrop-blur-md border-b border-gold-500/20 px-3 sm:px-6 py-2">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+      <!-- Choir Brand & Conductor Pill -->
+      <div class="flex items-center gap-2.5 overflow-hidden">
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gold-500/15 border border-gold-500/40 text-gold-400 shrink-0">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
+          </svg>
+        </span>
+        <div class="truncate">
+          <div class="text-[11px] sm:text-xs font-cinzel tracking-wider text-gold-400 font-semibold truncate uppercase">Çorum Belediyesi TSM Korosu</div>
+          <div class="text-[10px] sm:text-[11px] text-stone-400 flex items-center gap-1.5 truncate">
+            <span>Şef: <strong class="text-stone-200">Atakan Tetik</strong></span>
+            <span class="inline-block w-1 h-1 rounded-full bg-gold-500/60"></span>
+            <span class="text-gold-400/90 font-medium">Nota Arşivi</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <!-- Sound Toggle -->
+        <button id="btnSoundToggle" title="Ses Efektlerini Aç/Kapat" class="p-2 sm:px-3 sm:py-1.5 rounded-lg bg-wood-850 border border-gold-500/20 text-stone-300 hover:text-gold-400 hover:border-gold-500/50 transition-all flex items-center gap-1.5 text-xs">
+          <span id="soundIcon">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+            </svg>
+          </span>
+          <span class="hidden sm:inline text-[11px]">Ses Açık</span>
+        </button>
+
+        <!-- Fullscreen Button -->
+        <button id="btnFullscreenToggle" title="Tam Ekrana Geç" class="p-2 sm:px-3 sm:py-1.5 rounded-lg bg-wood-850 border border-gold-500/20 text-stone-300 hover:text-gold-400 hover:border-gold-500/50 transition-all flex items-center gap-1.5 text-xs">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+          </svg>
+          <span class="hidden sm:inline text-[11px]">Tam Ekran</span>
+        </button>
+
+        <!-- Admin Login / Panel Button -->
+        <button id="btnAdminAccess" class="px-2.5 sm:px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-600/30 to-gold-600/40 border border-gold-500/60 text-gold-300 hover:text-white hover:border-gold-400 transition-all flex items-center gap-1.5 text-xs font-medium shadow-sm">
+          <svg class="w-3.5 h-3.5 text-gold-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <span id="adminBtnText" class="text-[11px] sm:text-xs">Yönetici</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HERO COVER BANNER (wall.jpg) ================= -->
+  <!-- wall.jpg with seamless bottom fade out into #140d09 -->
+  <section class="hero-banner-container">
+    <div class="relative w-full">
+      <img src="wall.jpg" 
+           alt="Çorum Belediyesi Türk Sanat Müziği Korosu - Şef Atakan Tetik" 
+           class="hero-banner-img mx-auto"
+           onerror="this.onerror=null; this.src='KoroSefi.jpg';">
+      <!-- Gradient overlay to blend bottom flawlessly -->
+      <div class="hero-gradient-overlay"></div>
+    </div>
+
+    <!-- Hero Underlay Content with Classical Flourish -->
+    <div class="max-w-7xl mx-auto px-4 -mt-10 sm:-mt-16 relative z-10 text-center">
+      <!-- Ottoman Gold Motif Separator -->
+      <div class="flex items-center justify-center gap-3 text-gold-500/60 mb-3">
+        <span class="h-[1px] w-12 sm:w-28 bg-gradient-to-r from-transparent to-gold-500/50"></span>
+        <span class="text-sm tracking-widest text-gold-400 font-cinzel">❖ ── ✦ ── ❖</span>
+        <span class="h-[1px] w-12 sm:w-28 bg-gradient-to-l from-transparent to-gold-500/50"></span>
+      </div>
+
+      <h1 class="text-2xl sm:text-4xl md:text-5xl font-cinzel font-bold tracking-tight gold-gradient-text drop-shadow-md">
+        DİJİTAL NOTA KÜTÜPHANESİ
+      </h1>
+      <p class="text-xs sm:text-sm md:text-base text-stone-300 font-serif italic max-w-2xl mx-auto mt-2 leading-relaxed">
+        Koro üyelerimiz ve musikişinaslar için hazırlanan resmi koro arşivi ve 2.400'ü aşkın eseri barındıran geniş dijital nota kataloğu.
+      </p>
+
+      <!-- Main Navigation Tabs: KORO ÖZEL vs GENİŞ KATALOG -->
+      <div class="flex items-center justify-center gap-3 mt-6 max-w-xl mx-auto">
+        <button id="tabBtnKoro" onclick="switchMainTab('koro')" class="flex-1 py-3 px-4 rounded-2xl font-cinzel text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 border-gold-500 bg-gold-500 text-wood-950 shadow-lg shadow-gold-500/20">
+          <span>🎼</span>
+          <span>Koro Özel Arşivi</span>
+          <span id="badgeKoroCount" class="text-[10px] px-1.5 py-0.5 rounded-full bg-wood-950/80 text-gold-300">2</span>
+        </button>
+
+        <button id="tabBtnCatalog" onclick="switchMainTab('catalog')" class="flex-1 py-3 px-4 rounded-2xl font-cinzel text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400">
+          <span>📚</span>
+          <span>Geniş Nota Kataloğu</span>
+          <span id="badgeCatalogCount" class="text-[10px] px-1.5 py-0.5 rounded-full bg-wood-800 text-gold-400">2.421</span>
+        </button>
+      </div>
+
+      <!-- Live Archive Statistics Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 max-w-4xl mx-auto mt-6">
+        <div class="glass-card rounded-xl p-3 sm:p-4 text-center">
+          <div class="text-[10px] sm:text-xs text-stone-400 uppercase tracking-wider font-cinzel">Koro Eserleri</div>
+          <div id="statTotalSongs" class="text-xl sm:text-2xl font-bold font-serif text-gold-400 mt-1">2</div>
+          <div class="text-[9px] text-stone-400">Özel Nota & Güfte</div>
+        </div>
+
+        <div class="glass-card rounded-xl p-3 sm:p-4 text-center">
+          <div class="text-[10px] sm:text-xs text-stone-400 uppercase tracking-wider font-cinzel">Katalog Eseri</div>
+          <div id="statTotalCatalog" class="text-xl sm:text-2xl font-bold font-serif text-amber-300 mt-1">2.421</div>
+          <div class="text-[9px] text-stone-400">ŞahaNey & NotaArşivleri</div>
+        </div>
+
+        <div class="glass-card rounded-xl p-3 sm:p-4 text-center">
+          <div class="text-[10px] sm:text-xs text-stone-400 uppercase tracking-wider font-cinzel">Toplam İndirme</div>
+          <div id="statTotalDownloads" class="text-xl sm:text-2xl font-bold font-serif text-emerald-400 mt-1">0</div>
+          <div class="text-[9px] text-stone-400">Koro İndirmeleri</div>
+        </div>
+
+        <div class="glass-card rounded-xl p-3 sm:p-4 text-center border-gold-500/40 relative overflow-hidden group cursor-pointer" onclick="openAboutChefModal()">
+          <div class="text-[10px] sm:text-xs text-stone-400 uppercase tracking-wider font-cinzel">Koro Şefi</div>
+          <div class="text-sm sm:text-base font-bold font-serif text-white mt-1 truncate">Atakan Tetik</div>
+          <div class="text-[9px] text-gold-400 flex items-center justify-center gap-1 mt-0.5">
+            <span>Özgeçmiş</span>
+            <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SECTION 1: KORO ÖZEL ARŞİVİ ================= -->
+  <main id="sectionKoro" class="max-w-7xl mx-auto px-3 sm:px-6 pt-8 pb-16 relative z-10">
+    
+    <!-- Controls Bar -->
+    <div class="glass-card rounded-2xl p-4 sm:p-6 mb-8 border border-gold-500/30">
+      <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+        
+        <!-- Search Input -->
+        <div class="relative flex-1">
+          <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gold-500/70">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </span>
+          <input type="text" 
+                 id="searchInput" 
+                 placeholder="Koro arşivinde eser adı, makam, bestekâr veya güftede ara..." 
+                 class="w-full pl-10 pr-10 py-3 rounded-xl bg-wood-900/90 border border-gold-500/30 text-stone-100 placeholder-stone-500 text-sm focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/50 transition-all">
+          <button id="btnClearSearch" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-white">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <!-- Sort & View Controls -->
+        <div class="flex items-center gap-2.5 shrink-0">
+          <div class="relative">
+            <select id="sortSelect" class="appearance-none bg-wood-900/90 border border-gold-500/30 text-stone-200 text-xs sm:text-sm rounded-xl pl-3 pr-8 py-3 focus:outline-none focus:border-gold-400 cursor-pointer">
+              <option value="date-desc">En Yeni Eklenen</option>
+              <option value="title-asc">Eser Adı (A-Z)</option>
+              <option value="downloads-desc">En Çok İndirilen</option>
+              <option value="makam-asc">Makama Göre (A-Z)</option>
+            </select>
+            <span class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gold-500">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </div>
+
+          <!-- Upload Quick Button for Admin -->
+          <button id="btnQuickUpload" class="hidden px-4 py-3 rounded-xl bg-gold-500 hover:bg-gold-400 text-wood-950 font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-gold-500/20 transition-all">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Yeni Nota Ekle</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Makam Filter Chips -->
+      <div class="mt-4 pt-4 border-t border-gold-500/15">
+        <div class="flex items-center gap-2 text-xs text-stone-400 mb-2">
+          <span class="text-gold-400 font-semibold font-cinzel uppercase text-[11px] tracking-wider">Makam Filtresi:</span>
+          <span id="activeFilterBadge" class="text-[10px] text-gold-300">Tümü gösteriliyor</span>
+        </div>
+        <div id="makamFilterContainer" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+          <button class="makam-pill px-3 py-1.5 rounded-full text-xs font-medium border border-gold-500 bg-gold-500 text-wood-950 shrink-0 transition-all" data-makam="all">
+            Tümü
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Repertoire List Header -->
+    <div class="flex items-center justify-between mb-4 px-1">
+      <div class="flex items-center gap-2">
+        <h2 class="text-lg sm:text-xl font-cinzel font-bold text-stone-100 flex items-center gap-2">
+          <span class="text-gold-400">🎼</span> Çorum Belediyesi TSM Korosu Eserleri
+        </h2>
+        <span id="songCountPill" class="text-xs px-2 py-0.5 rounded-full bg-gold-500/20 text-gold-300 border border-gold-500/30">
+          2 eser
+        </span>
+      </div>
+      <div id="syncStatus" class="text-xs text-stone-400 flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-500/80"></span>
+        <span class="text-[11px]">Dijital Nota Arşivi</span>
+      </div>
+    </div>
+
+    <!-- Song Cards Grid -->
+    <div id="songGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"></div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-16 px-4 glass-card rounded-2xl max-w-lg mx-auto mt-8">
+      <div class="w-14 h-14 rounded-full bg-gold-500/10 border border-gold-500/30 flex items-center justify-center mx-auto text-gold-400 mb-3">
+        <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="m8 11 6 0"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-cinzel font-bold text-stone-200">Eser Bulunamadı</h3>
+      <p class="text-xs text-stone-400 mt-1 max-w-sm mx-auto">
+        Aradığınız kriterlere uygun nota kaydı bulunamadı. Lütfen filtreleri kontrol ediniz.
+      </p>
+      <button onclick="resetFilters()" class="mt-4 px-4 py-2 rounded-xl bg-wood-800 border border-gold-500/30 text-gold-300 text-xs hover:border-gold-400 transition-all">
+        Filtreleri Temizle
+      </button>
+    </div>
+  </main>
+
+  <!-- ================= SECTION 2: GENİŞ HARİCİ DİJİTAL NOTA KATALOĞU ================= -->
+  <main id="sectionCatalog" class="hidden max-w-7xl mx-auto px-3 sm:px-6 pt-8 pb-16 relative z-10">
+    
+    <!-- Catalog Header Info Banner -->
+    <div class="glass-card rounded-2xl p-4 sm:p-6 mb-8 border border-gold-500/30">
+      <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between mb-5">
+        <div>
+          <h2 class="text-lg sm:text-2xl font-cinzel font-bold text-white flex items-center gap-2">
+            <span>📚</span> Geniş Dijital Nota Kataloğu
+          </h2>
+          <p class="text-xs sm:text-sm text-stone-400 mt-1">
+            Türk Sanat Müziği, Türk Halk Müziği ve Popüler Müzik repertuvarından binlerce PDF nota belgesi.
+          </p>
+        </div>
+      </div>
+
+      <!-- Search Input for External Catalog -->
+      <div class="relative mb-4">
+        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gold-500/70">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </span>
+        <input type="text" 
+               id="catalogSearchInput" 
+               placeholder="2.500+ eser içinde ara: Şarkı adı, makam, bestekâr, usûl veya form..." 
+               class="w-full pl-10 pr-10 py-3 rounded-xl bg-wood-900/90 border border-gold-500/30 text-stone-100 placeholder-stone-500 text-sm focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/50 transition-all">
+        <button id="btnCatalogClearSearch" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-white">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Category Filter Tabs: Tümü, TSM, THM, Popüler -->
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 border-t border-gold-500/15 pt-3">
+        <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium border border-gold-500 bg-gold-500 text-wood-950 font-bold shrink-0 transition-all" data-cat="all">
+          Tümü (<span id="catCountAll">2.521</span>)
+        </button>
+        <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium border border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400 shrink-0 transition-all" data-cat="TSM">
+          Türk Sanat Müziği (TSM)
+        </button>
+        <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium border border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400 shrink-0 transition-all" data-cat="THM">
+          Türk Halk Müziği (THM)
+        </button>
+        <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium border border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400 shrink-0 transition-all" data-cat="POPÜLER">
+          Popüler Müzik
+        </button>
+      </div>
+    </div>
+
+    <!-- Catalog Results Count -->
+    <div class="flex items-center justify-between mb-4 px-1">
+      <div class="text-xs text-stone-300">
+        Gösterilen: <strong id="catalogFilteredCount" class="text-gold-400 font-bold">0</strong> eser bulundu
+      </div>
+      <div class="text-[11px] text-stone-400">
+        Orijinal PDF bağlantıları ile doğrudan indirme
+      </div>
+    </div>
+
+    <!-- Catalog Grid -->
+    <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+    <!-- Load More Button -->
+    <div id="catalogLoadMoreContainer" class="mt-8 text-center hidden">
+      <button onclick="loadMoreCatalog()" class="px-6 py-3 rounded-2xl bg-wood-850 hover:bg-wood-800 border border-gold-500/30 text-gold-300 hover:text-white font-cinzel text-xs font-bold transition-all shadow-md">
+        Daha Fazla Eser Göster (+50)
+      </button>
+    </div>
+  </main>
+
+  <!-- ================= SONG DETAILS & SHEET VIEWER MODAL ================= -->
+  <div id="songModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 transition-all duration-300">
+    <div class="glass-card w-full max-w-5xl max-h-[94vh] rounded-2xl border-gold-500/40 flex flex-col overflow-hidden shadow-2xl relative">
+      
+      <!-- Modal Header -->
+      <div class="px-4 sm:px-6 py-3.5 bg-wood-950 border-b border-gold-500/20 flex items-center justify-between gap-3 shrink-0">
+        <div class="flex items-center gap-3 overflow-hidden">
+          <span class="w-9 h-9 rounded-full bg-gold-500/15 border border-gold-500/40 flex items-center justify-center text-gold-400 shrink-0">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
+            </svg>
+          </span>
+          <div class="truncate">
+            <h3 id="modalSongTitle" class="text-base sm:text-xl font-serif font-bold text-white truncate">Eser Adı</h3>
+            <div class="flex items-center gap-2 text-xs text-stone-400 truncate">
+              <span id="modalMakamPill" class="text-gold-300 font-medium">Makam</span>
+              <span>•</span>
+              <span id="modalUsulPill" class="text-stone-300">Usul</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button id="modalBtnDownload" class="px-3 sm:px-4 py-2 rounded-xl bg-gold-500 hover:bg-gold-400 text-wood-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span class="hidden sm:inline">İndir</span>
+          </button>
+
+          <button onclick="closeSongModal()" class="w-9 h-9 rounded-full bg-wood-850 hover:bg-wood-800 border border-gold-500/20 text-stone-400 hover:text-white flex items-center justify-center transition-all">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body (Two Column Layout for Desktop, Stacked for Mobile) -->
+      <div class="flex-1 overflow-y-auto flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gold-500/20 bg-wood-950/70">
+        
+        <!-- Left: Interactive Sheet Music Preview -->
+        <div class="md:w-3/5 p-3 sm:p-5 flex flex-col h-full min-h-[380px] md:min-h-[560px]">
+          <!-- Sheet Header Controls -->
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-cinzel font-semibold text-gold-400 uppercase tracking-wider flex items-center gap-1.5">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Nota Kağıdı
+            </span>
+            
+            <div id="pdfPaginationBar" class="hidden flex items-center gap-1.5 bg-wood-850 px-2.5 py-1 rounded-xl border border-gold-500/30 text-xs">
+              <button type="button" onclick="prevPdfPage()" class="p-1 px-1.5 rounded hover:bg-wood-800 text-stone-300 hover:text-gold-400 font-bold" title="Önceki Sayfa">◀</button>
+              <span id="pdfPageIndicator" class="text-[11px] text-stone-300 font-mono">1 / 1</span>
+              <button type="button" onclick="nextPdfPage()" class="p-1 px-1.5 rounded hover:bg-wood-800 text-stone-300 hover:text-gold-400 font-bold" title="Sonraki Sayfa">▶</button>
+              <span class="mx-1 text-gold-500/40">|</span>
+              <button type="button" onclick="zoomPdf(0.25)" class="px-2 py-0.5 rounded bg-wood-800 hover:bg-gold-500 hover:text-wood-950 font-bold text-xs transition-colors flex items-center gap-1" title="Yakınlaştır">
+                <span>🔍+</span>
+              </button>
+              <span id="zoomIndicator" class="text-[11px] text-gold-300 font-mono font-bold px-1 min-w-[38px] text-center">115%</span>
+              <button type="button" onclick="zoomPdf(-0.25)" class="px-2 py-0.5 rounded bg-wood-800 hover:bg-gold-500 hover:text-wood-950 font-bold text-xs transition-colors flex items-center gap-1" title="Uzaklaştır">
+                <span>🔍-</span>
+              </button>
+              <button type="button" onclick="resetZoomPdf()" class="px-1.5 py-0.5 rounded bg-wood-800 hover:bg-gold-500 hover:text-wood-950 text-[10px] text-stone-400 font-mono" title="Varsayılan Boyut">1:1</button>
+            </div>
+
+            <button id="modalBtnOpenNewTab" title="Ayrı Sekmede Aç" class="px-2.5 py-1 rounded bg-wood-850 border border-gold-500/20 text-stone-300 hover:text-gold-400 text-xs flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              <span class="text-[11px]">Büyüt</span>
+            </button>
+          </div>
+
+          <!-- Sheet Canvas / Viewer Container -->
+          <div id="modalViewerContainer" class="flex-1 w-full bg-wood-950/90 rounded-xl border border-gold-500/20 overflow-auto relative flex items-start justify-center min-h-[360px] p-3 sm:p-5">
+            <canvas id="pdfCanvas" class="hidden shadow-2xl rounded bg-white my-auto mx-auto"></canvas>
+            <div id="viewerFallback" class="w-full h-full flex items-center justify-center"></div>
+          </div>
+        </div>
+
+        <!-- Right: Song Details & Full Lyrics (Güfte) -->
+        <div class="md:w-2/5 p-4 sm:p-6 flex flex-col justify-between overflow-y-auto bg-wood-900/60">
+          <div>
+            <!-- Metadata Cards -->
+            <div class="grid grid-cols-2 gap-2.5 mb-5 text-xs">
+              <div class="bg-wood-850 p-2.5 rounded-xl border border-gold-500/15">
+                <div class="text-[10px] text-stone-400 font-cinzel">BESTEKÂR</div>
+                <div id="modalComposer" class="font-serif font-bold text-stone-100 text-sm mt-0.5 truncate">-</div>
+              </div>
+              <div class="bg-wood-850 p-2.5 rounded-xl border border-gold-500/15">
+                <div class="text-[10px] text-stone-400 font-cinzel">GÜFTEKÂR</div>
+                <div id="modalLyricist" class="font-serif font-bold text-stone-100 text-sm mt-0.5 truncate">-</div>
+              </div>
+              <div class="bg-wood-850 p-2.5 rounded-xl border border-gold-500/15">
+                <div class="text-[10px] text-stone-400 font-cinzel">MAKAM & USÛL</div>
+                <div id="modalMakamUsul" class="font-medium text-gold-300 text-xs mt-0.5 truncate">-</div>
+              </div>
+              <div class="bg-wood-850 p-2.5 rounded-xl border border-gold-500/15">
+                <div class="text-[10px] text-stone-400 font-cinzel">FORM / TÜR</div>
+                <div id="modalForm" class="font-medium text-stone-300 text-xs mt-0.5 truncate">Şarkı</div>
+              </div>
+            </div>
+
+            <!-- Full Lyrics (Güfte) Box -->
+            <div class="mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-cinzel font-semibold text-gold-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                  Şarkının Güftesi (Sözleri)
+                </span>
+                <button onclick="copyModalLyrics()" class="text-[11px] text-stone-400 hover:text-gold-300 flex items-center gap-1 px-2 py-0.5 rounded bg-wood-800 border border-gold-500/20">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <span>Kopyala</span>
+                </button>
+              </div>
+
+              <div id="modalLyricsBox" class="bg-wood-950/80 p-4 rounded-xl border border-gold-500/20 font-poetic text-stone-200 text-sm sm:text-base leading-relaxed whitespace-pre-line max-h-[240px] md:max-h-[300px] overflow-y-auto italic"></div>
+            </div>
+          </div>
+
+          <!-- Bottom Download Info -->
+          <div class="pt-3 border-t border-gold-500/15 flex items-center justify-between text-xs text-stone-400">
+            <span id="modalDownloadCount" class="flex items-center gap-1 text-gold-400/90 font-medium">
+              📥 İndirme Bağlantısı
+            </span>
+            <span id="modalFileSize" class="text-[11px] text-stone-500">PDF Nota</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ADMIN PIN / PASSWORD MODAL ("2027") ================= -->
+  <div id="pinModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div id="pinCard" class="glass-card w-full max-w-sm rounded-3xl p-6 sm:p-7 border-gold-500/40 text-center relative shadow-2xl">
+      <button onclick="closePinModal()" class="absolute top-4 right-4 text-stone-400 hover:text-white p-1 rounded-full">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="w-12 h-12 rounded-full bg-gold-500/15 border border-gold-500/40 text-gold-400 flex items-center justify-center mx-auto mb-3">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+      </div>
+
+      <h3 class="text-lg font-cinzel font-bold text-white">Yönetici Girişi</h3>
+      <p class="text-xs text-stone-400 mt-1 mb-5">
+        Nota yükleme ve düzenleme yetkisi için 4 haneli şifrenizi giriniz.
+      </p>
+
+      <!-- 4 PIN Dots -->
+      <div id="pinDots" class="flex items-center justify-center gap-3.5 mb-6">
+        <div class="pin-dot w-4 h-4 rounded-full border-2 border-gold-500/40 bg-wood-950 transition-all duration-200"></div>
+        <div class="pin-dot w-4 h-4 rounded-full border-2 border-gold-500/40 bg-wood-950 transition-all duration-200"></div>
+        <div class="pin-dot w-4 h-4 rounded-full border-2 border-gold-500/40 bg-wood-950 transition-all duration-200"></div>
+        <div class="pin-dot w-4 h-4 rounded-full border-2 border-gold-500/40 bg-wood-950 transition-all duration-200"></div>
+      </div>
+
+      <!-- Numeric Keypad -->
+      <div class="grid grid-cols-3 gap-2.5 max-w-[260px] mx-auto">
+        <button class="keypad-btn p-3.5 rounded-2xl bg-wood-850 hover:bg-wood-800 active:bg-gold-500 active:text-black border border-gold-500/20 text-lg font-bold transition-all" data-key="1">1</button>
+        <button class="keypad-btn p-3.5 rounded-2xl bg-wood-850 hover:bg-wood-800 active:bg-gold-500 active:text-black border border-gold-500/20 text-lg font-bold transition-all" data-key="2">2</button>
+        <button class="keypad-btn p-3.5 rounded-2xl bg-wood-850 hover:bg-wood-800 active:bg-gold-500 active:text-black border border-gold-500/20 text-lg font-bold transition-all" data-key="3">3</button>
+        <button class="keypad-btn p-3.5 rounded-2xl bg-wood-850 hover:bg-wood-800 active:bg-gold-500 active:text-black border border-gold-500/20 text-lg font-bold transition-all" data-key="4">4</button>
+        <button class="keypad-btn p-3.5 rounded-2xl bg-wood-850 hover:bg-wood-800 active:bg-gold-500 active:text-black border border-gold-500/20 text-lg font-bold transition-all" data-key="5">5</button>
+        <button class="keypad-btn p-3.5 rounded-2xl bg-wood-850 hover:bg-wood-800 active:bg-gold-500 active:text-black border border-gold-500/20 text-lg font-bold transition-all" data-key="6">6</button>
+        <button class="keypad-btn p-3.5 rounded-2xl bg-wood-850 hover:bg-wood-800 active:bg-gold-500 active:text-black border border-gold-500/20 text-lg font-bold transition-all" data-key="7">7</button>
+        <button class="keypad-btn p-3.5 rounded-2xl bg-wood-850 hover:bg-wood-800 active:bg-gold-500 active:text-black border border-gold-500/20 text-lg font-bold transition-all" data-key="8">8</button>
+        <button class="keypad-btn p-3.5 rounded-2xl bg-wood-850 hover:bg-wood-800 active:bg-gold-500 active:text-black border border-gold-500/20 text-lg font-bold transition-all" data-key="9">9</button>
+        <button class="keypad-btn p-3.5 rounded-2xl bg-wood-950/60 hover:bg-wood-800 active:bg-gold-500 active:text-black border border-gold-500/20 text-sm font-semibold text-stone-400 transition-all" data-key="clear">C</button>
+        <button class="keypad-btn p-3.5 rounded-2xl bg-wood-850 hover:bg-wood-800 active:bg-gold-500 active:text-black border border-gold-500/20 text-lg font-bold transition-all" data-key="0">0</button>
+        <button class="keypad-btn p-3.5 rounded-2xl bg-wood-950/60 hover:bg-wood-800 active:bg-gold-500 active:text-black border border-gold-500/20 text-sm font-semibold text-stone-400 transition-all flex items-center justify-center" data-key="back">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+        </button>
+      </div>
+
+      <p id="pinErrorMsg" class="hidden text-xs text-rose-400 mt-4 font-medium">
+        Hatalı şifre! Lütfen tekrar deneyiniz.
+      </p>
+    </div>
+  </div>
+
+  <!-- ================= ADMIN UPLOAD & MANAGE MODAL ================= -->
+  <div id="adminModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto">
+    <div class="glass-card w-full max-w-4xl max-h-[92vh] rounded-3xl border-gold-500/40 flex flex-col overflow-hidden shadow-2xl relative">
+      
+      <!-- Admin Modal Header -->
+      <div class="px-5 py-4 bg-wood-950 border-b border-gold-500/20 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-full bg-gold-500/20 border border-gold-500/40 flex items-center justify-center text-gold-400">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </span>
+          <div>
+            <h3 class="text-base sm:text-lg font-cinzel font-bold text-white">Yönetici Paneli</h3>
+            <p class="text-[11px] text-stone-400">Yeni Eser Ekle & Arşivle</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="lockAdmin()" class="text-xs px-2.5 py-1 rounded-lg bg-wood-850 hover:bg-wood-800 text-stone-300 border border-gold-500/20">
+            Çıkış Yap
+          </button>
+          <button onclick="closeAdminModal()" class="w-8 h-8 rounded-full bg-wood-850 hover:bg-wood-800 text-stone-400 hover:text-white flex items-center justify-center">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Modal Content -->
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+        
+        <!-- Drag & Drop Upload Zone -->
+        <div id="dropZone" class="border-2 border-dashed border-gold-500/40 hover:border-gold-400 rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all bg-wood-900/50 hover:bg-wood-900 relative overflow-hidden group">
+          
+          <!-- Animated AI Laser Scanner Bar -->
+          <div id="aiScanLaser" class="hidden ai-laser-bar"></div>
+
+          <input type="file" id="fileInput" accept="application/pdf,image/png,image/jpeg,image/webp" class="hidden">
+          
+          <div id="uploadPrompt" class="py-3 space-y-4">
+            <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-gold-500/25 via-gold-500/10 to-transparent border-2 border-gold-400/70 text-gold-300 flex items-center justify-center mx-auto luminous-pulse cursor-pointer group-hover:border-gold-300 transition-all">
+              <svg class="w-10 h-10 sm:w-12 sm:h-12 drop-shadow-[0_0_10px_rgba(212,175,55,0.7)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="text-base sm:text-lg font-cinzel font-bold text-stone-100 tracking-wide">
+                Buraya Sürükleyin ya da Seçin
+              </h4>
+              <p class="text-xs text-stone-400 mt-1">
+                PDF veya Resim (Maks. 5 MB)
+              </p>
+            </div>
+          </div>
+
+          <!-- File Loading / Analyzing State -->
+          <div id="aiAnalyzingState" class="hidden py-6 space-y-3">
+            <div class="w-12 h-12 rounded-full border-2 border-gold-500 border-t-transparent animate-spin mx-auto"></div>
+            <h5 class="text-sm font-cinzel font-bold text-gold-300">Nota Kağıdı İnceleniyor...</h5>
+            <p class="text-xs text-stone-400 max-w-sm mx-auto">
+              Eser detayları taranıyor, lütfen bekleyiniz...
+            </p>
+          </div>
+
+          <!-- File Selected Preview Badge -->
+          <div id="filePreviewBadge" class="hidden mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-wood-850 border border-gold-500/40 text-xs text-stone-200">
+            <span id="badgeFileName" class="font-medium truncate max-w-xs">dosya.pdf</span>
+            <span id="badgeFileSize" class="text-stone-400 text-[10px]"></span>
+            <button type="button" onclick="resetSelectedFile(event)" class="text-rose-400 hover:text-rose-300 ml-1">✕</button>
+          </div>
+        </div>
+
+        <!-- Editable Form for Song Details -->
+        <form id="songUploadForm" onsubmit="handleSongFormSubmit(event)" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-cinzel font-semibold text-gold-400 uppercase tracking-wider mb-1">
+                Eser / Şarkı Adı <span class="text-rose-400">*</span>
+              </label>
+              <input type="text" id="inputTitle" required placeholder="Örn: Seni Andım Bu Gece" class="w-full px-3.5 py-2.5 rounded-xl bg-wood-900 border border-gold-500/30 text-stone-100 text-sm focus:outline-none focus:border-gold-400">
+            </div>
+
+            <div>
+              <label class="block text-xs font-cinzel font-semibold text-gold-400 uppercase tracking-wider mb-1">Makamı</label>
+              <input type="text" id="inputMakam" placeholder="Örn: Kürdîli Hicazkâr, Nihavend, Rast..." class="w-full px-3.5 py-2.5 rounded-xl bg-wood-900 border border-gold-500/30 text-stone-100 text-sm focus:outline-none focus:border-gold-400">
+            </div>
+
+            <div>
+              <label class="block text-xs font-cinzel font-semibold text-gold-400 uppercase tracking-wider mb-1">Usûlü</label>
+              <input type="text" id="inputUsul" placeholder="Örn: Düyek, Sofyan, Evfer, Curcuna..." class="w-full px-3.5 py-2.5 rounded-xl bg-wood-900 border border-gold-500/30 text-stone-100 text-sm focus:outline-none focus:border-gold-400">
+            </div>
+
+            <div>
+              <label class="block text-xs font-cinzel font-semibold text-gold-400 uppercase tracking-wider mb-1">Bestekâr</label>
+              <input type="text" id="inputComposer" placeholder="Örn: Şekip Ayhan Özışık" class="w-full px-3.5 py-2.5 rounded-xl bg-wood-900 border border-gold-500/30 text-stone-100 text-sm focus:outline-none focus:border-gold-400">
+            </div>
+
+            <div>
+              <label class="block text-xs font-cinzel font-semibold text-gold-400 uppercase tracking-wider mb-1">Güftekâr</label>
+              <input type="text" id="inputLyricist" placeholder="Örn: Faruk Nafiz Çamlıbel" class="w-full px-3.5 py-2.5 rounded-xl bg-wood-900 border border-gold-500/30 text-stone-100 text-sm focus:outline-none focus:border-gold-400">
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-cinzel font-semibold text-gold-400 uppercase tracking-wider mb-1">Formu / Türü</label>
+              <input type="text" id="inputFormType" placeholder="Örn: Şarkı, Saz Semaisi, Peşrev, İlahi..." value="Şarkı" class="w-full px-3.5 py-2.5 rounded-xl bg-wood-900 border border-gold-500/30 text-stone-100 text-sm focus:outline-none focus:border-gold-400">
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-cinzel font-semibold text-gold-400 uppercase tracking-wider mb-1">Eserin Sözleri / Güftesi</label>
+              <textarea id="inputLyrics" rows="5" placeholder="Eserin kıtaları ve güfte sözleri..." class="w-full px-3.5 py-2.5 rounded-xl bg-wood-900 border border-gold-500/30 text-stone-100 text-sm focus:outline-none focus:border-gold-400 font-serif leading-relaxed"></textarea>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-gold-500/20 flex items-center justify-end gap-3">
+            <button type="button" onclick="closeAdminModal()" class="px-4 py-2.5 rounded-xl bg-wood-850 hover:bg-wood-800 text-stone-300 text-xs">
+              İptal
+            </button>
+            <button type="submit" id="btnSaveSong" class="px-6 py-2.5 rounded-xl bg-gold-500 hover:bg-gold-400 text-wood-950 font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-gold-500/20 transition-all">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <span>Arşive Kaydet</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Manage Existing Songs List -->
+        <div class="pt-6 border-t border-gold-500/20">
+          <h4 class="text-sm font-cinzel font-bold text-gold-400 mb-3 flex items-center justify-between">
+            <span>Mevcut Eserleri Yönet</span>
+            <span id="adminListCount" class="text-xs text-stone-400 font-sans font-normal">2 Eser</span>
+          </h4>
+          <div id="adminSongList" class="space-y-2 max-h-60 overflow-y-auto"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ABOUT CHEF / KORO MODAL ================= -->
+  <div id="aboutChefModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md rounded-3xl p-6 border-gold-500/40 text-center relative shadow-2xl">
+      <button onclick="closeAboutChefModal()" class="absolute top-4 right-4 text-stone-400 hover:text-white p-1 rounded-full">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="relative w-28 h-28 mx-auto mb-4">
+        <img src="KoroSefi.jpg" 
+             alt="Şef Atakan Tetik" 
+             class="w-full h-full rounded-full object-cover border-2 border-gold-500 shadow-xl"
+             onerror="this.src='wall.jpg'">
+        <div class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gold-500 text-wood-950 flex items-center justify-center font-bold text-xs shadow-md">
+          🎼
+        </div>
+      </div>
+
+      <h3 class="text-xl font-cinzel font-bold text-white">Atakan Tetik</h3>
+      <div class="text-xs text-gold-400 font-cinzel uppercase tracking-wider mt-0.5">Koro Şefi & Ud Sanatçısı</div>
+      
+      <div class="mt-4 p-4 rounded-2xl bg-wood-950/80 border border-gold-500/20 text-xs text-stone-300 leading-relaxed text-left space-y-2 font-serif">
+        <p>
+          <strong>Çorum Belediyesi Türk Sanat Müziği Korosu</strong>, kadim musikimizi yaşatmak, gelecek nesillere aktarmak ve Çorum'un kültür sanat hayatına değer katmak amacıyla çalışmalarını Şef <strong>Atakan Tetik</strong> yönetiminde başarıyla sürdürmektedir.
+        </p>
+        <p>
+          Koromuz zengin repertuarı, usta icracıları ve musikiye gönül vermiş değerli koro üyeleriyle konser ve sanat etkinliklerine devam etmektedir.
+        </p>
+      </div>
+
+      <button onclick="closeAboutChefModal()" class="mt-5 w-full py-2.5 rounded-xl bg-gold-500 hover:bg-gold-400 text-wood-950 font-bold text-xs transition-all">
+        Kapat
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= MOBILE FIXED BOTTOM NAVIGATION BAR ================= -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-wood-950/95 backdrop-blur-xl border-t border-gold-500/20 px-3 py-2">
+    <div class="flex items-center justify-around">
+      <button onclick="switchMainTab('koro')" class="flex flex-col items-center gap-1 text-gold-400 focus:outline-none">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
+        </svg>
+        <span class="text-[10px] font-medium tracking-tight">Koro</span>
+      </button>
+
+      <button onclick="switchMainTab('catalog')" class="flex flex-col items-center gap-1 text-stone-400 hover:text-gold-300 focus:outline-none">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        <span class="text-[10px] font-medium tracking-tight">Katalog</span>
+      </button>
+
+      <button onclick="openAboutChefModal()" class="flex flex-col items-center gap-1 text-stone-400 hover:text-gold-300 focus:outline-none">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+        </svg>
+        <span class="text-[10px] font-medium tracking-tight">Koro Şefi</span>
+      </button>
+
+      <button onclick="triggerAdminAccess()" class="flex flex-col items-center gap-1 text-stone-400 hover:text-gold-300 focus:outline-none">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        <span class="text-[10px] font-medium tracking-tight">Yönetici</span>
+      </button>
+
+      <button onclick="toggleFullscreen()" class="flex flex-col items-center gap-1 text-stone-400 hover:text-gold-300 focus:outline-none">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+        </svg>
+        <span class="text-[10px] font-medium tracking-tight">Tam Ekran</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ================= FLOATING TOAST CONTAINER ================= -->
+  <div id="toastContainer" class="fixed bottom-20 md:bottom-6 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ================= CORE APPLICATION JAVASCRIPT ================= -->
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDb53nwt-uwiXuQ0qhjE7UG-Z0M0W1zeFE",
+      authDomain: "notdefteri-74cf6.firebaseapp.com",
+      databaseURL: "https://notdefteri-74cf6-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "notdefteri-74cf6",
+      storageBucket: "notdefteri-74cf6.firebasestorage.app",
+      messagingSenderId: "524573457132",
+      appId: "1:524573457132:web:9422d5845e2f4333c803c9",
+      measurementId: "G-Q7QDK688R9"
+    };
+
+    // Gemini API Configuration with Prioritized Model Fallbacks & Safe Masking
+    function resolveGeminiKey() {
+      const stored = localStorage.getItem("gemini_api_key");
+      if (stored) return stored;
+      const k = "QVEuQWI4Uk42SjlLcWtDdlVCSXhzeDFMdDBjYWZ3ckU5VzR5X2E0dnBXQ0hCdlZZWURjYUE=";
+      if (!k || k.startsWith("__")) return "";
+      try { return (k.startsWith("AIza") ? k : atob(k)); } catch(e) { return k; }
+    }
+    const GEMINI_API_KEY = resolveGeminiKey();
+    const GEMINI_MODELS_PRIORITY = [
+      "gemini-flash-lite-latest",
+      "gemini-flash-latest",
+      "gemini-2.5-flash-lite",
+      "gemini-2.5-flash",
+      "gemini-2.0-flash",
+      "gemini-1.5-flash"
+    ];
+
+    // Admin Passcode
+    const ADMIN_PIN = "2027";
+
+    // Initialize Firebase Compat
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+    const songsRef = db.ref("KEKEC-KORO/songs");
+
+    // Application State
+    let allSongs = [];
+    let currentMakamFilter = "all";
+    let searchQuery = "";
+    let sortMode = "date-desc";
+    let activeTab = "koro"; // 'koro' or 'catalog'
+    let isAdminUnlocked = sessionStorage.getItem("tsm_admin_unlocked") === "true";
+    let enteredPin = "";
+    let selectedFileData = null;
+    let selectedFileType = null;
+    let selectedFileName = null;
+    let selectedFileSize = 0;
+    let soundEnabled = localStorage.getItem("tsm_sound_enabled") !== "false";
+
+    // External Catalog State
+    let externalCatalog = window.EXTERNAL_NOTA_CATALOG || [];
+    let catalogFilterCat = "all";
+    let catalogSearchQuery = "";
+    let catalogDisplayLimit = 60;
+
+    // Turkish-aware Search Normalization Helper
+    function trNormalize(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/İ/g, 'i')
+        .replace(/I/g, 'ı')
+        .replace(/ı/g, 'i')
+        .replace(/ğ/g, 'g').replace(/Ğ/g, 'g')
+        .replace(/ü/g, 'u').replace(/Ü/g, 'u')
+        .replace(/ş/g, 's').replace(/Ş/g, 's')
+        .replace(/ö/g, 'o').replace(/Ö/g, 'o')
+        .replace(/ç/g, 'c').replace(/Ç/g, 'c')
+        .replace(/â/g, 'a').replace(/Â/g, 'a')
+        .replace(/î/g, 'i').replace(/Î/g, 'i')
+        .replace(/û/g, 'u').replace(/Û/g, 'u')
+        .toLowerCase()
+        .trim();
+    }
+
+    // PDF.js State
+    let currentPdfDoc = null;
+    let currentPdfPage = 1;
+    let currentPdfScale = 1.35;
+    let activeModalBlobUrl = null;
+
+    // Tab Switcher
+    window.switchMainTab = function(tab) {
+      playTapSound();
+      activeTab = tab;
+      const tabBtnKoro = document.getElementById("tabBtnKoro");
+      const tabBtnCatalog = document.getElementById("tabBtnCatalog");
+      const secKoro = document.getElementById("sectionKoro");
+      const secCatalog = document.getElementById("sectionCatalog");
+
+      if (tab === 'koro') {
+        tabBtnKoro.className = "flex-1 py-3 px-4 rounded-2xl font-cinzel text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 border-gold-500 bg-gold-500 text-wood-950 shadow-lg shadow-gold-500/20";
+        tabBtnCatalog.className = "flex-1 py-3 px-4 rounded-2xl font-cinzel text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400";
+        secKoro.classList.remove("hidden");
+        secCatalog.classList.add("hidden");
+      } else {
+        tabBtnCatalog.className = "flex-1 py-3 px-4 rounded-2xl font-cinzel text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 border-gold-500 bg-gold-500 text-wood-950 shadow-lg shadow-gold-500/20";
+        tabBtnKoro.className = "flex-1 py-3 px-4 rounded-2xl font-cinzel text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400";
+        secCatalog.classList.remove("hidden");
+        secKoro.classList.add("hidden");
+        renderCatalog();
+      }
+    };
+
+    // ================= SYNTHESIZED WEB AUDIO ENGINE =================
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTapSound() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(440, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.06);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.07);
+      } catch (e) {}
+    }
+
+    function playKeypadTone(key) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const freqs = {
+          '1': 523.25, '2': 587.33, '3': 659.25,
+          '4': 698.46, '5': 783.99, '6': 880.00,
+          '7': 987.77, '8': 1046.50, '9': 1174.66,
+          '0': 440.00, 'clear': 330.00, 'back': 370.00
+        };
+        const f = freqs[key] || 440;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, ctx.currentTime);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.13);
+      } catch (e) {}
+    }
+
+    function playSuccessChime() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + idx * 0.08);
+          osc.stop(ctx.currentTime + idx * 0.08 + 0.36);
+        });
+      } catch (e) {}
+    }
+
+    function playErrorBuzz() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, ctx.currentTime);
+        osc.frequency.setValueAtTime(130, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.26);
+      } catch (e) {}
+    }
+
+    function playDownloadSound() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const notes = [440, 554.37, 659.25, 880];
+        notes.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.06);
+          gain.gain.setValueAtTime(0.14, ctx.currentTime + i * 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.06 + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + i * 0.06);
+          osc.stop(ctx.currentTime + i * 0.06 + 0.26);
+        });
+      } catch (e) {}
+    }
+
+    // ================= FULLSCREEN ON FIRST INTERACTION =================
+    let hasAttemptedAutoFullscreen = false;
+    function attemptFirstInteractionFullscreen() {
+      if (hasAttemptedAutoFullscreen) return;
+      hasAttemptedAutoFullscreen = true;
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().then(() => {
+          showToast("✨ Tam ekran mobil görünüm aktif", "info");
+        }).catch(() => {});
+      }
+    }
+    window.addEventListener("click", attemptFirstInteractionFullscreen, { once: true });
+    window.addEventListener("touchstart", attemptFirstInteractionFullscreen, { once: true });
+
+    function toggleFullscreen() {
+      playTapSound();
+      if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {
+            showToast("Tam ekran açılamadı.", "error");
+          });
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+    document.getElementById("btnFullscreenToggle").addEventListener("click", toggleFullscreen);
+
+    // Sound Toggle
+    document.getElementById("btnSoundToggle").addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem("tsm_sound_enabled", soundEnabled);
+      updateSoundUI();
+      if (soundEnabled) playSuccessChime();
+      showToast(soundEnabled ? "🔊 Ses efektleri açıldı" : "🔇 Ses kapatıldı", "info");
+    });
+
+    function updateSoundUI() {
+      const btn = document.getElementById("btnSoundToggle");
+      const icon = document.getElementById("soundIcon");
+      if (soundEnabled) {
+        btn.querySelector("span:last-child").textContent = "Ses Açık";
+        icon.innerHTML = `<svg class="w-4 h-4 text-gold-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
+      } else {
+        btn.querySelector("span:last-child").textContent = "Sessiz";
+        icon.innerHTML = `<svg class="w-4 h-4 text-stone-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`;
+      }
+    }
+    updateSoundUI();
+
+    // ================= TOAST NOTIFICATION SYSTEM =================
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+      toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium shadow-2xl flex items-center gap-2 transform transition-all duration-300 translate-y-3 opacity-0 ${
+        type === 'error' ? 'bg-rose-950 border border-rose-500/60 text-rose-200' :
+        type === 'success' ? 'bg-emerald-950 border border-emerald-500/60 text-emerald-200' :
+        'bg-wood-850 border border-gold-500/50 text-gold-200'
+      }`;
+      
+      const icon = type === 'error' ? '⚠️' : type === 'success' ? '✅' : '🎶';
+      toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+      container.appendChild(toast);
+      
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-3', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-3', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // ================= FIREBASE REALTIME SYNC (KORO ÖZEL) =================
+    songsRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        allSongs = Object.keys(data).map(key => ({
+          ...data[key],
+          id: key
+        }));
+      } else {
+        allSongs = [];
+      }
+      updateStats();
+      renderMakamFilters();
+      renderSongs();
+      if (isAdminUnlocked) {
+        renderAdminSongList();
+      }
+    }, (error) => {
+      console.error("Firebase sync error:", error);
+      showToast("Arşiv bağlantı hatası!", "error");
+    });
+
+    // ================= STATS & COUNTERS =================
+    function updateStats() {
+      const totalSongs = allSongs.length;
+      const totalCatalog = externalCatalog.length;
+      const totalDownloads = allSongs.reduce((acc, curr) => acc + (curr.downloads || 0), 0);
+
+      document.getElementById("statTotalSongs").textContent = totalSongs;
+      document.getElementById("badgeKoroCount").textContent = totalSongs;
+      document.getElementById("songCountPill").textContent = `${totalSongs} eser`;
+      document.getElementById("statTotalCatalog").textContent = totalCatalog.toLocaleString('tr-TR');
+      document.getElementById("badgeCatalogCount").textContent = totalCatalog.toLocaleString('tr-TR');
+      document.getElementById("catCountAll").textContent = totalCatalog.toLocaleString('tr-TR');
+      document.getElementById("statTotalDownloads").textContent = totalDownloads;
+    }
+
+    // ================= MAKAM FILTERS =================
+    function renderMakamFilters() {
+      const container = document.getElementById("makamFilterContainer");
+      const makamMap = {};
+      allSongs.forEach(s => {
+        const m = (s.makam || 'Diğer').trim();
+        makamMap[m] = (makamMap[m] || 0) + 1;
+      });
+
+      let html = `
+        <button class="makam-pill px-3.5 py-1.5 rounded-full text-xs font-medium border shrink-0 transition-all ${
+          currentMakamFilter === 'all' 
+            ? 'border-gold-500 bg-gold-500 text-wood-950 font-bold shadow-md shadow-gold-500/20' 
+            : 'border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400'
+        }" data-makam="all">
+          Tümü (${allSongs.length})
+        </button>
+      `;
+
+      Object.keys(makamMap).sort().forEach(makam => {
+        const isSelected = currentMakamFilter === makam;
+        html += `
+          <button class="makam-pill px-3 py-1.5 rounded-full text-xs font-medium border shrink-0 transition-all ${
+            isSelected 
+              ? 'border-gold-500 bg-gold-500 text-wood-950 font-bold shadow-md shadow-gold-500/20' 
+              : 'border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400'
+          }" data-makam="${makam}">
+            ${makam} <span class="opacity-70 text-[10px]">(${makamMap[makam]})</span>
+          </button>
+        `;
+      });
+
+      container.innerHTML = html;
+
+      container.querySelectorAll(".makam-pill").forEach(btn => {
+        btn.addEventListener("click", () => {
+          playTapSound();
+          currentMakamFilter = btn.dataset.makam;
+          document.getElementById("activeFilterBadge").textContent = currentMakamFilter === 'all' ? 'Tümü gösteriliyor' : `${currentMakamFilter} makamı`;
+          renderMakamFilters();
+          renderSongs();
+        });
+      });
+    }
+
+    // ================= RENDER SONGS GRID (KORO ÖZEL) =================
+    function renderSongs() {
+      const grid = document.getElementById("songGrid");
+      const emptyState = document.getElementById("emptyState");
+
+      let filtered = allSongs.filter(song => {
+        if (currentMakamFilter !== 'all' && (song.makam || '').trim() !== currentMakamFilter) {
+          return false;
+        }
+        if (searchQuery.trim()) {
+          const q = trNormalize(searchQuery);
+          const matchTitle = trNormalize(song.title).includes(q);
+          const matchMakam = trNormalize(song.makam).includes(q);
+          const matchUsul = trNormalize(song.usul).includes(q);
+          const matchComposer = trNormalize(song.composer).includes(q);
+          const matchLyricist = trNormalize(song.lyricist).includes(q);
+          const matchLyrics = trNormalize(song.lyrics).includes(q);
+          return matchTitle || matchMakam || matchUsul || matchComposer || matchLyricist || matchLyrics;
+        }
+        return true;
+      });
+
+      filtered.sort((a, b) => {
+        if (sortMode === 'title-asc') return (a.title || '').localeCompare(b.title || '', 'tr');
+        if (sortMode === 'downloads-desc') return (b.downloads || 0) - (a.downloads || 0);
+        if (sortMode === 'makam-asc') return (a.makam || '').localeCompare(b.makam || '', 'tr');
+        return (b.uploadedAt || 0) - (a.uploadedAt || 0);
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = "";
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      emptyState.classList.add("hidden");
+
+      grid.innerHTML = filtered.map(song => {
+        const downloads = song.downloads || 0;
+
+        return `
+          <div class="glass-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between group relative overflow-hidden">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2.5">
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gradient-to-r from-amber-600/30 to-gold-600/40 text-gold-300 border border-gold-500/40">
+                  <span>🎶</span> ${escapeHtml(song.makam || 'Klasik TSM')}
+                </span>
+
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10px] text-stone-400 bg-wood-950/80 px-2 py-0.5 rounded-full border border-gold-500/15">
+                    ${escapeHtml(song.usul || 'Serbest')}
+                  </span>
+                  ${isAdminUnlocked ? `
+                    <button onclick="deleteSong('${song.id}')" title="Eseri Sil" class="p-1 rounded-full text-stone-400 hover:text-rose-400 hover:bg-rose-950/50 transition-all">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+
+              <h3 class="text-base sm:text-lg font-serif font-bold text-white group-hover:text-gold-300 transition-colors line-clamp-2 mt-1">
+                ${escapeHtml(song.title || 'İsimsiz Eser')}
+              </h3>
+
+              <div class="space-y-1 mt-2.5 text-xs text-stone-300">
+                <div class="flex items-center gap-1.5 truncate">
+                  <span class="text-gold-500/70">🎼</span>
+                  <span class="text-stone-400 text-[11px]">Beste:</span>
+                  <strong class="text-stone-200 font-medium truncate">${escapeHtml(song.composer || 'Anonim')}</strong>
+                </div>
+                ${song.lyricist ? `
+                  <div class="flex items-center gap-1.5 truncate">
+                    <span class="text-gold-500/70">✍️</span>
+                    <span class="text-stone-400 text-[11px]">Güfte:</span>
+                    <span class="text-stone-300 truncate">${escapeHtml(song.lyricist)}</span>
+                  </div>
+                ` : ''}
+              </div>
+
+              ${song.lyrics ? `
+                <p class="mt-3 text-xs text-stone-400 font-serif italic line-clamp-2 border-l-2 border-gold-500/30 pl-2.5 bg-wood-950/40 py-1 rounded-r">
+                  "${escapeHtml(song.lyrics.split('\n')[0] || '')}"
+                </p>
+              ` : ''}
+            </div>
+
+            <div class="mt-5 pt-3.5 border-t border-gold-500/15 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1 text-[11px] text-gold-400/90 font-medium" title="İndirilme Sayısı">
+                <span>📥</span>
+                <span id="counter-${song.id}">${downloads} indirme</span>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <button onclick="openSongModal('${song.id}')" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-wood-850 hover:bg-wood-800 text-stone-200 hover:text-gold-300 border border-gold-500/20 text-xs font-medium flex items-center gap-1 transition-all">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <span>İncele</span>
+                </button>
+
+                <button onclick="downloadSong('${song.id}')" class="px-3 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-400 hover:to-amber-400 text-wood-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-gold-500/20 transition-all active:scale-95">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>İndir</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ================= RENDER EXTERNAL CATALOG (ŞahaNey & NotaArşivleri) =================
+    function renderCatalog() {
+      const grid = document.getElementById("catalogGrid");
+      const loadMoreBtn = document.getElementById("catalogLoadMoreContainer");
+
+      let filtered = externalCatalog.filter(item => {
+        // Category filter
+        if (catalogFilterCat === 'TSM' && item.cat !== 'TSM') return false;
+        if (catalogFilterCat === 'THM' && item.cat !== 'THM') return false;
+        if (catalogFilterCat === 'POPÜLER' && item.cat !== 'POPÜLER') return false;
+
+        // Search Query
+        if (catalogSearchQuery.trim()) {
+          const q = trNormalize(catalogSearchQuery);
+          const matchTitle = trNormalize(item.t).includes(q);
+          const matchMakam = trNormalize(item.m).includes(q);
+          const matchBeste = trNormalize(item.b).includes(q);
+          const matchUsul = trNormalize(item.u).includes(q);
+          const matchForm = trNormalize(item.f).includes(q);
+          const matchCat = trNormalize(item.cat).includes(q);
+          return matchTitle || matchMakam || matchBeste || matchUsul || matchForm || matchCat;
+        }
+        return true;
+      });
+
+      if (document.getElementById("catCountAll")) {
+        document.getElementById("catCountAll").textContent = externalCatalog.length.toLocaleString('tr-TR');
+      }
+      document.getElementById("catalogFilteredCount").textContent = filtered.length.toLocaleString('tr-TR');
+
+      const displayed = filtered.slice(0, catalogDisplayLimit);
+
+      if (displayed.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-12 glass-card rounded-2xl p-6">
+            <span class="text-3xl block mb-2">🔍</span>
+            <h4 class="font-cinzel text-base font-bold text-stone-200">Katalogda Eser Bulunamadı</h4>
+            <p class="text-xs text-stone-400 mt-1">Aradığınız kriterlere uygun harici nota kaydı bulunamadı.</p>
+          </div>
+        `;
+        loadMoreBtn.classList.add("hidden");
+        return;
+      }
+
+      grid.innerHTML = displayed.map((item, idx) => {
+        return `
+          <div class="glass-card rounded-2xl p-4 flex flex-col justify-between group">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-wood-950/80 text-gold-300 border border-gold-500/30">
+                  <span>🎵</span> ${escapeHtml(item.m || 'TSM')}
+                </span>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10px] text-stone-400 bg-wood-900/90 px-2 py-0.5 rounded border border-gold-500/15 font-medium">
+                    ${escapeHtml(item.f || 'Eser')}
+                  </span>
+                  <span class="text-[10px] text-gold-400/90 bg-wood-950/80 px-2 py-0.5 rounded border border-gold-500/20 font-medium">
+                    ${escapeHtml(item.cat || 'TSM')}
+                  </span>
+                </div>
+              </div>
+
+              <h4 class="text-sm sm:text-base font-serif font-bold text-white group-hover:text-gold-300 transition-colors line-clamp-2 mt-1">
+                ${escapeHtml(item.t)}
+              </h4>
+
+              <div class="space-y-1 mt-2 text-xs text-stone-300">
+                <div class="flex items-center gap-1.5 truncate">
+                  <span class="text-gold-500/70">🎼</span>
+                  <span class="text-stone-400 text-[11px]">Beste:</span>
+                  <span class="text-stone-200 truncate">${escapeHtml(item.b || 'Bilinmiyor')}</span>
+                </div>
+                ${item.u ? `
+                  <div class="flex items-center gap-1.5 truncate">
+                    <span class="text-gold-500/70">🥁</span>
+                    <span class="text-stone-400 text-[11px]">Usûl:</span>
+                    <span class="text-stone-300 truncate">${escapeHtml(item.u)}</span>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-gold-500/15 flex items-center justify-between gap-2">
+              <span class="text-[10px] text-stone-500 truncate max-w-[120px]" title="${escapeHtml(item.url)}">
+                PDF Belgesi
+              </span>
+
+              <div class="flex items-center gap-1.5">
+                <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-wood-850 hover:bg-wood-800 text-stone-200 hover:text-gold-300 border border-gold-500/20 text-xs font-medium flex items-center gap-1 transition-all">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  <span>Görüntüle</span>
+                </a>
+
+                <a href="${escapeHtml(item.url)}" download target="_blank" rel="noopener noreferrer" onclick="playDownloadSound()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-400 hover:to-amber-400 text-wood-950 font-bold text-xs flex items-center gap-1 shadow-md shadow-gold-500/20 transition-all">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>İndir</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (filtered.length > catalogDisplayLimit) {
+        loadMoreBtn.classList.remove("hidden");
+      } else {
+        loadMoreBtn.classList.add("hidden");
+      }
+    }
+
+    window.loadMoreCatalog = function() {
+      playTapSound();
+      catalogDisplayLimit += 60;
+      renderCatalog();
+    };
+
+    // Category pills filter listener
+    document.querySelectorAll(".cat-pill").forEach(pill => {
+      pill.addEventListener("click", () => {
+        playTapSound();
+        catalogFilterCat = pill.dataset.cat;
+        document.querySelectorAll(".cat-pill").forEach(p => {
+          if (p.dataset.cat === catalogFilterCat) {
+            p.className = "cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium border border-gold-500 bg-gold-500 text-wood-950 font-bold shrink-0 transition-all";
+          } else {
+            p.className = "cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium border border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400 shrink-0 transition-all";
+          }
+        });
+        catalogDisplayLimit = 60;
+        renderCatalog();
+      });
+    });
+
+    // Catalog search
+    const catalogSearchInput = document.getElementById("catalogSearchInput");
+    const btnCatalogClearSearch = document.getElementById("btnCatalogClearSearch");
+
+    catalogSearchInput.addEventListener("input", (e) => {
+      catalogSearchQuery = e.target.value;
+      if (catalogSearchQuery.trim()) {
+        btnCatalogClearSearch.classList.remove("hidden");
+      } else {
+        btnCatalogClearSearch.classList.add("hidden");
+      }
+      catalogDisplayLimit = 60;
+      renderCatalog();
+    });
+
+    btnCatalogClearSearch.addEventListener("click", () => {
+      catalogSearchInput.value = "";
+      catalogSearchQuery = "";
+      btnCatalogClearSearch.classList.add("hidden");
+      catalogDisplayLimit = 60;
+      renderCatalog();
+    });
+
+    // ================= DOWNLOAD SONG & INCREMENT COUNTER =================
+    async function downloadSong(songId) {
+      playDownloadSound();
+      const song = allSongs.find(s => s.id === songId);
+      if (!song) return;
+
+      try {
+        db.ref(`KEKEC-KORO/songs/${songId}/downloads`).transaction((current) => (current || 0) + 1);
+      } catch (err) {
+        console.warn("Counter error:", err);
+      }
+
+      if (!song.fileData) {
+        showToast("Nota dosyası bulunamadı!", "error");
+        return;
+      }
+
+      try {
+        const blob = base64ToBlob(song.fileData, song.fileType || 'application/pdf');
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const cleanTitle = (song.title || 'Nota').replace(/[/\\?%*:|"<>]/g, '-');
+        const ext = (song.fileType || '').includes('pdf') || (song.fileName || '').endsWith('.pdf') ? '.pdf' : '.png';
+        a.download = `${cleanTitle} - Çorum TSM Korosu${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        showToast(`"${song.title}" indiriliyor...`, "success");
+      } catch (e) {
+        console.error("Download error:", e);
+        showToast("Dosya indirme sırasında hata oluştu.", "error");
+      }
+    }
+
+    function base64ToBlob(base64Data, contentType = 'application/pdf') {
+      const parts = base64Data.split(',');
+      const b64 = parts.length > 1 ? parts[1] : parts[0];
+      const byteCharacters = atob(b64);
+      const byteArrays = [];
+      const sliceSize = 1024;
+      for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+        const slice = byteCharacters.slice(offset, offset + sliceSize);
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+      }
+      return new Blob(byteArrays, { type: contentType });
+    }
+
+    // ================= SONG DETAILS & SHEET PREVIEW MODAL =================
+    async function openSongModal(songId) {
+      playTapSound();
+      const song = allSongs.find(s => s.id === songId);
+      if (!song) return;
+
+      document.getElementById("modalSongTitle").textContent = song.title || 'İsimsiz Eser';
+      document.getElementById("modalMakamPill").textContent = song.makam ? `${song.makam} Makamı` : 'Makam Belirtilmemiş';
+      document.getElementById("modalUsulPill").textContent = song.usul ? `${song.usul} Usûlü` : 'Usûl Belirtilmemiş';
+      document.getElementById("modalComposer").textContent = song.composer || 'Bilinmiyor';
+      document.getElementById("modalLyricist").textContent = song.lyricist || 'Bilinmiyor';
+      document.getElementById("modalMakamUsul").textContent = `${song.makam || '-'} / ${song.usul || '-'}`;
+      document.getElementById("modalForm").textContent = song.form || 'Şarkı';
+      document.getElementById("modalLyricsBox").textContent = song.lyrics || 'Bu eser için güfte metni henüz eklenmemiştir.';
+      document.getElementById("modalDownloadCount").textContent = `📥 ${song.downloads || 0} kez indirildi`;
+      document.getElementById("modalFileSize").textContent = song.fileSize ? `${Math.round(song.fileSize / 1024)} KB` : 'Dosya';
+
+      const canvas = document.getElementById("pdfCanvas");
+      const fallbackContainer = document.getElementById("viewerFallback");
+      const paginationBar = document.getElementById("pdfPaginationBar");
+
+      if (activeModalBlobUrl) {
+        URL.revokeObjectURL(activeModalBlobUrl);
+        activeModalBlobUrl = null;
+      }
+
+      if (song.fileData) {
+        const isPdf = (song.fileType || '').includes('pdf') || (song.fileName || '').endsWith('.pdf');
+        const blob = base64ToBlob(song.fileData, song.fileType || 'application/pdf');
+        activeModalBlobUrl = URL.createObjectURL(blob);
+
+        document.getElementById("modalBtnOpenNewTab").onclick = () => {
+          playTapSound();
+          window.open(activeModalBlobUrl, '_blank');
+        };
+
+        if (isPdf && window.pdfjsLib) {
+          fallbackContainer.innerHTML = `<div class="text-xs text-stone-400 py-6">Nota kağıdı yükleniyor...</div>`;
+          paginationBar.classList.remove("hidden");
+          canvas.classList.remove("hidden");
+          fallbackContainer.classList.add("hidden");
+
+          try {
+            const rawBytes = await blob.arrayBuffer();
+            currentPdfDoc = await pdfjsLib.getDocument({ data: rawBytes }).promise;
+            currentPdfPage = 1;
+            renderPdfPage(currentPdfPage);
+          } catch (pdfErr) {
+            console.warn("PDF.js render error, fallback to iframe:", pdfErr);
+            renderIframeFallback(activeModalBlobUrl);
+          }
+        } else if (isPdf) {
+          renderIframeFallback(activeModalBlobUrl);
+        } else {
+          paginationBar.classList.remove("hidden");
+          canvas.classList.add("hidden");
+          fallbackContainer.classList.remove("hidden");
+          currentPdfScale = 1.0;
+          fallbackContainer.innerHTML = `
+            <img id="previewImg" src="${activeModalBlobUrl}" alt="${escapeHtml(song.title)}" style="transform: scale(1); transform-origin: top center; transition: transform 0.15s ease;" class="shadow-2xl rounded-lg my-auto mx-auto max-w-full">
+          `;
+          document.getElementById("pdfPageIndicator").textContent = "1 / 1";
+          const zInd = document.getElementById("zoomIndicator");
+          if (zInd) zInd.textContent = "100%";
+        }
+      } else {
+        paginationBar.classList.add("hidden");
+        canvas.classList.add("hidden");
+        fallbackContainer.classList.remove("hidden");
+        fallbackContainer.innerHTML = `<div class="text-xs text-stone-400">Nota dosyası bulunamadı.</div>`;
+      }
+
+      document.getElementById("modalBtnDownload").onclick = () => {
+        downloadSong(song.id);
+      };
+
+      document.getElementById("songModal").classList.remove("hidden");
+    }
+
+    function renderIframeFallback(url) {
+      const canvas = document.getElementById("pdfCanvas");
+      const fallbackContainer = document.getElementById("viewerFallback");
+      const paginationBar = document.getElementById("pdfPaginationBar");
+      paginationBar.classList.add("hidden");
+      canvas.classList.add("hidden");
+      fallbackContainer.classList.remove("hidden");
+      fallbackContainer.innerHTML = `
+        <iframe src="${url}#toolbar=0" class="w-full h-full min-h-[380px] md:min-h-[520px] border-0 rounded-xl bg-white"></iframe>
+      `;
+    }
+
+    let pdfRenderTask = null;
+
+    async function renderPdfPage(pageNumber) {
+      if (!currentPdfDoc) return;
+      
+      if (pdfRenderTask) {
+        try { pdfRenderTask.cancel(); } catch(e){}
+      }
+
+      const canvas = document.getElementById("pdfCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      
+      try {
+        const page = await currentPdfDoc.getPage(pageNumber);
+        const viewport = page.getViewport({ scale: currentPdfScale });
+
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.style.width = `${viewport.width}px`;
+        canvas.style.height = `${viewport.height}px`;
+
+        const renderContext = {
+          canvasContext: ctx,
+          viewport: viewport
+        };
+        pdfRenderTask = page.render(renderContext);
+        await pdfRenderTask.promise;
+        pdfRenderTask = null;
+
+        const pInd = document.getElementById("pdfPageIndicator");
+        if (pInd) pInd.textContent = `${pageNumber} / ${currentPdfDoc.numPages}`;
+
+        const zInd = document.getElementById("zoomIndicator");
+        if (zInd) zInd.textContent = `${Math.round(currentPdfScale * 100)}%`;
+      } catch (err) {
+        if (err && err.name === 'RenderingCancelledException') {
+          return;
+        }
+        console.warn("PDF render error:", err);
+      }
+    }
+
+    window.nextPdfPage = function() {
+      if (!currentPdfDoc || currentPdfPage >= currentPdfDoc.numPages) return;
+      playTapSound();
+      currentPdfPage++;
+      renderPdfPage(currentPdfPage);
+    };
+
+    window.prevPdfPage = function() {
+      if (!currentPdfDoc || currentPdfPage <= 1) return;
+      playTapSound();
+      currentPdfPage--;
+      renderPdfPage(currentPdfPage);
+    };
+
+    window.zoomPdf = function(delta) {
+      playTapSound();
+      currentPdfScale = Math.max(0.5, Math.min(3.5, Math.round((currentPdfScale + delta) * 100) / 100));
+      if (currentPdfDoc) {
+        renderPdfPage(currentPdfPage);
+      } else {
+        const img = document.getElementById("previewImg");
+        if (img) {
+          img.style.transform = `scale(${currentPdfScale})`;
+        }
+        const zInd = document.getElementById("zoomIndicator");
+        if (zInd) zInd.textContent = `${Math.round(currentPdfScale * 100)}%`;
+      }
+    };
+
+    window.resetZoomPdf = function() {
+      playTapSound();
+      currentPdfScale = currentPdfDoc ? 1.15 : 1.0;
+      if (currentPdfDoc) {
+        renderPdfPage(currentPdfPage);
+      } else {
+        const img = document.getElementById("previewImg");
+        if (img) {
+          img.style.transform = `scale(${currentPdfScale})`;
+        }
+        const zInd = document.getElementById("zoomIndicator");
+        if (zInd) zInd.textContent = "100%";
+      }
+    };
+
+    window.closeSongModal = function() {
+      playTapSound();
+      document.getElementById("songModal").classList.add("hidden");
+      if (pdfRenderTask) {
+        try { pdfRenderTask.cancel(); } catch(e){}
+        pdfRenderTask = null;
+      }
+      currentPdfDoc = null;
+      if (activeModalBlobUrl) {
+        URL.revokeObjectURL(activeModalBlobUrl);
+        activeModalBlobUrl = null;
+      }
+    };
+
+    function copyModalLyrics() {
+      playTapSound();
+      const lyrics = document.getElementById("modalLyricsBox").textContent;
+      navigator.clipboard.writeText(lyrics).then(() => {
+        showToast("Güfte metni kopyalandı! 📋", "success");
+      }).catch(() => {
+        showToast("Kopyalanamadı.", "error");
+      });
+    }
+
+    // ================= ADMIN PIN MODAL ("2027") =================
+    function triggerAdminAccess() {
+      playTapSound();
+      if (isAdminUnlocked) {
+        openAdminModal();
+      } else {
+        openPinModal();
+      }
+    }
+    document.getElementById("btnAdminAccess").addEventListener("click", triggerAdminAccess);
+    document.getElementById("btnQuickUpload").addEventListener("click", () => {
+      playTapSound();
+      openAdminModal();
+    });
+
+    function openPinModal() {
+      enteredPin = "";
+      updatePinDots();
+      document.getElementById("pinErrorMsg").classList.add("hidden");
+      document.getElementById("pinModal").classList.remove("hidden");
+    }
+
+    function closePinModal() {
+      playTapSound();
+      document.getElementById("pinModal").classList.add("hidden");
+      enteredPin = "";
+    }
+
+    document.querySelectorAll(".keypad-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.key;
+        playKeypadTone(key);
+        handlePinInput(key);
+      });
+    });
+
+    window.addEventListener("keydown", (e) => {
+      const pinModal = document.getElementById("pinModal");
+      if (!pinModal.classList.contains("hidden")) {
+        if (e.key >= '0' && e.key <= '9') {
+          playKeypadTone(e.key);
+          handlePinInput(e.key);
+        } else if (e.key === 'Backspace') {
+          playKeypadTone('back');
+          handlePinInput('back');
+        } else if (e.key === 'Escape') {
+          closePinModal();
+        }
+      }
+    });
+
+    function handlePinInput(key) {
+      if (key === 'clear') {
+        enteredPin = "";
+      } else if (key === 'back') {
+        enteredPin = enteredPin.slice(0, -1);
+      } else if (enteredPin.length < 4) {
+        enteredPin += key;
+      }
+
+      updatePinDots();
+
+      if (enteredPin.length === 4) {
+        setTimeout(verifyPin, 150);
+      }
+    }
+
+    function updatePinDots() {
+      const dots = document.querySelectorAll(".pin-dot");
+      dots.forEach((dot, idx) => {
+        if (idx < enteredPin.length) {
+          dot.classList.add("bg-gold-500", "border-gold-400", "scale-110");
+          dot.classList.remove("bg-wood-950", "border-gold-500/40");
+        } else {
+          dot.classList.remove("bg-gold-500", "border-gold-400", "scale-110");
+          dot.classList.add("bg-wood-950", "border-gold-500/40");
+        }
+      });
+    }
+
+    function verifyPin() {
+      if (enteredPin === ADMIN_PIN) {
+        playSuccessChime();
+        isAdminUnlocked = true;
+        sessionStorage.setItem("tsm_admin_unlocked", "true");
+        updateAdminUIState();
+        closePinModal();
+        showToast("👑 Yönetici girişi başarılı!", "success");
+        openAdminModal();
+      } else {
+        playErrorBuzz();
+        const card = document.getElementById("pinCard");
+        card.classList.add("shake-error");
+        document.getElementById("pinErrorMsg").classList.remove("hidden");
+        setTimeout(() => {
+          card.classList.remove("shake-error");
+          enteredPin = "";
+          updatePinDots();
+        }, 500);
+      }
+    }
+
+    function updateAdminUIState() {
+      const adminBtn = document.getElementById("adminBtnText");
+      const quickBtn = document.getElementById("btnQuickUpload");
+      if (isAdminUnlocked) {
+        adminBtn.textContent = "Yönetici (Açık)";
+        quickBtn.classList.remove("hidden");
+      } else {
+        adminBtn.textContent = "Yönetici";
+        quickBtn.classList.add("hidden");
+      }
+      renderSongs();
+    }
+    updateAdminUIState();
+
+    function lockAdmin() {
+      playTapSound();
+      isAdminUnlocked = false;
+      sessionStorage.removeItem("tsm_admin_unlocked");
+      updateAdminUIState();
+      closeAdminModal();
+      showToast("Yönetici oturumu kapatıldı.", "info");
+    }
+
+    // ================= ADMIN UPLOAD MODAL & GEMINI OCR (MULTI-MODEL WATERFALL) =================
+    function openAdminModal() {
+      playTapSound();
+      renderAdminSongList();
+      document.getElementById("adminModal").classList.remove("hidden");
+    }
+
+    function closeAdminModal() {
+      playTapSound();
+      document.getElementById("adminModal").classList.add("hidden");
+    }
+
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+
+    dropZone.addEventListener("click", () => fileInput.click());
+
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("border-gold-400", "bg-wood-850");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("border-gold-400", "bg-wood-850");
+    });
+
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("border-gold-400", "bg-wood-850");
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        processSelectedFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        processSelectedFile(e.target.files[0]);
+      }
+    });
+
+    function resetSelectedFile(e) {
+      if (e) e.stopPropagation();
+      selectedFileData = null;
+      selectedFileType = null;
+      selectedFileName = null;
+      selectedFileSize = 0;
+      fileInput.value = "";
+      document.getElementById("filePreviewBadge").classList.add("hidden");
+      document.getElementById("uploadPrompt").classList.remove("hidden");
+      document.getElementById("aiAnalyzingState").classList.add("hidden");
+      document.getElementById("aiScanLaser").classList.add("hidden");
+    }
+
+    async function processSelectedFile(file) {
+      const MAX_FILE_SIZE = 5 * 1024 * 1024;
+      if (file.size > MAX_FILE_SIZE) {
+        playErrorBuzz();
+        showToast(`Dosya çok büyük (${(file.size / (1024 * 1024)).toFixed(1)} MB)! Azami sınır 5 MB'dir.`, "error");
+        return;
+      }
+
+      selectedFileName = file.name;
+      selectedFileType = file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+      selectedFileSize = file.size;
+
+      document.getElementById("badgeFileName").textContent = file.name;
+      document.getElementById("badgeFileSize").textContent = `${Math.round(file.size / 1024)} KB`;
+      document.getElementById("filePreviewBadge").classList.remove("hidden");
+
+      const reader = new FileReader();
+      reader.onload = async function(event) {
+        selectedFileData = event.target.result;
+        await runGeminiOCRAnalysis(selectedFileData, selectedFileType);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Prioritized Gemini Model Execution: gemini-flash-lite-latest -> gemini-flash-latest -> backups
+    async function runGeminiOCRAnalysis(dataUrl, mimeType) {
+      document.getElementById("uploadPrompt").classList.add("hidden");
+      document.getElementById("aiAnalyzingState").classList.remove("hidden");
+      document.getElementById("aiScanLaser").classList.remove("hidden");
+
+      const pureBase64 = dataUrl.split(',')[1] || dataUrl;
+
+      const promptText = `Sen uzman bir Türk Sanat Müziği araştırmacısı ve nota uzmanısın. Eklenen nota kağıdını/belgeyi incele ve şu JSON şablonunda eksiksiz cevap ver:
+{
+  "title": "Eser / Şarkı Adı (Büyük-küçük harf düzeninde)",
+  "makam": "Makamı (Örn: Kürdîli Hicazkâr, Nihavend, Rast, Hicaz, Hüzzam, Uşşak, Kürdi vb.)",
+  "usul": "Usûlü (Örn: Düyek, Sofyan, Semai, Curcuna, Evfer vb.)",
+  "form": "Formu / Türü (Şarkı, İlahi, Peşrev, Saz Semaisi vb.)",
+  "composer": "Bestekârı (Bestecisi)",
+  "lyricist": "Güftekârı (Söz Yazarı)",
+  "lyrics": "Eserin tüm sözleri / güftesi (kıtalar halinde temiz Türkçe ile)"
+}
+Bilmediğin veya kağıtta yazmayan alanlar için genel musiki bilgini kullanarak doğru olanı yaz. Sadece ve sadece geçerli bir JSON döndür.`;
+
+      const requestPayload = {
+        contents: [
+          {
+            parts: [
+              {
+                inline_data: {
+                  mime_type: mimeType,
+                  data: pureBase64
+                }
+              },
+              {
+                text: promptText
+              }
+            ]
+          }
+        ]
+      };
+
+      let success = false;
+
+      for (const modelName of GEMINI_MODELS_PRIORITY) {
+        try {
+          const activeKey = resolveGeminiKey();
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${activeKey}`;
+          console.log(`Trying Gemini model: ${modelName}`);
+
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestPayload)
+          });
+
+          if (!response.ok) {
+            console.warn(`Model ${modelName} returned status ${response.status}, trying next fallback...`);
+            continue;
+          }
+
+          const data = await response.json();
+          const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+          let jsonStr = candidateText;
+          const jsonMatch = candidateText.match(/```json([\s\S]*?)```/) || candidateText.match(/{[\s\S]*}/);
+          if (jsonMatch) {
+            jsonStr = jsonMatch[1] || jsonMatch[0];
+          }
+
+          const parsed = JSON.parse(jsonStr.trim());
+
+          if (parsed.title) document.getElementById("inputTitle").value = parsed.title;
+          if (parsed.makam) document.getElementById("inputMakam").value = parsed.makam;
+          if (parsed.usul) document.getElementById("inputUsul").value = parsed.usul;
+          if (parsed.composer) document.getElementById("inputComposer").value = parsed.composer;
+          if (parsed.lyricist) document.getElementById("inputLyricist").value = parsed.lyricist;
+          if (parsed.form) document.getElementById("inputFormType").value = parsed.form;
+          if (parsed.lyrics) document.getElementById("inputLyrics").value = parsed.lyrics;
+
+          playSuccessChime();
+          showToast(`✨ Yapay Zekâ (${modelName}) nota kağıdını başarıyla çözümledi!`, "success");
+          success = true;
+          break;
+        } catch (err) {
+          console.warn(`Error with model ${modelName}:`, err);
+        }
+      }
+
+      if (!success) {
+        showToast("Otomatik analiz tamamlanamadı. Bilgileri elle girebilirsiniz.", "info");
+      }
+
+      document.getElementById("aiAnalyzingState").classList.add("hidden");
+      document.getElementById("aiScanLaser").classList.add("hidden");
+      document.getElementById("uploadPrompt").classList.remove("hidden");
+    }
+
+    async function handleSongFormSubmit(e) {
+      e.preventDefault();
+      playTapSound();
+
+      const title = document.getElementById("inputTitle").value.trim();
+      if (!title) {
+        showToast("Lütfen eser adını giriniz.", "error");
+        return;
+      }
+
+      if (!selectedFileData) {
+        showToast("Lütfen bir nota dosyası (PDF veya resim) yükleyiniz!", "error");
+        return;
+      }
+
+      const btnSave = document.getElementById("btnSaveSong");
+      btnSave.disabled = true;
+      btnSave.innerHTML = `<span>Kaydediliyor...</span>`;
+
+      const songId = `song_${Date.now()}`;
+      const songData = {
+        id: songId,
+        title: title,
+        makam: document.getElementById("inputMakam").value.trim() || 'Klasik',
+        usul: document.getElementById("inputUsul").value.trim() || 'Düyek',
+        composer: document.getElementById("inputComposer").value.trim() || 'Anonim',
+        lyricist: document.getElementById("inputLyricist").value.trim() || '',
+        form: document.getElementById("inputFormType").value.trim() || 'Şarkı',
+        lyrics: document.getElementById("inputLyrics").value.trim() || '',
+        fileName: selectedFileName || `${title}.pdf`,
+        fileType: selectedFileType || 'application/pdf',
+        fileSize: selectedFileSize,
+        fileData: selectedFileData,
+        downloads: 0,
+        uploadedAt: Date.now()
+      };
+
+      try {
+        await db.ref(`KEKEC-KORO/songs/${songId}`).set(songData);
+        playSuccessChime();
+        showToast(`"${title}" başarıyla arşive eklendi!`, "success");
+        
+        document.getElementById("songUploadForm").reset();
+        resetSelectedFile();
+        closeAdminModal();
+      } catch (err) {
+        console.error("Save error:", err);
+        playErrorBuzz();
+        showToast("Kayıt sırasında hata oluştu!", "error");
+      } finally {
+        btnSave.disabled = false;
+        btnSave.innerHTML = `
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span>Arşive Kaydet</span>
+        `;
+      }
+    }
+
+    function renderAdminSongList() {
+      const container = document.getElementById("adminSongList");
+      document.getElementById("adminListCount").textContent = `${allSongs.length} Eser`;
+
+      if (allSongs.length === 0) {
+        container.innerHTML = `<p class="text-xs text-stone-500 py-2">Arşivde henüz eser bulunmuyor.</p>`;
+        return;
+      }
+
+      container.innerHTML = allSongs.map(song => `
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-wood-900 border border-gold-500/15 text-xs">
+          <div class="truncate mr-2">
+            <strong class="text-stone-100 font-serif block truncate">${escapeHtml(song.title)}</strong>
+            <span class="text-gold-400 text-[10px]">${escapeHtml(song.makam || '-')} • ${escapeHtml(song.composer || '-')}</span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="downloadSong('${song.id}')" title="İndir" class="p-1.5 rounded-lg bg-wood-850 hover:bg-wood-800 text-stone-300 hover:text-gold-300">
+              📥
+            </button>
+            <button onclick="deleteSong('${song.id}')" title="Sil" class="p-1.5 rounded-lg bg-wood-850 hover:bg-rose-950 text-stone-400 hover:text-rose-400">
+              🗑️
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function deleteSong(songId) {
+      const song = allSongs.find(s => s.id === songId);
+      if (!song) return;
+      if (!confirm(`"${song.title}" adlı eseri silmek istediğinizden emin misiniz?`)) return;
+
+      playTapSound();
+      try {
+        await db.ref(`KEKEC-KORO/songs/${songId}`).remove();
+        playSuccessChime();
+        showToast(`"${song.title}" arşivden silindi.`, "info");
+      } catch (err) {
+        playErrorBuzz();
+        showToast("Silme işlemi başarısız.", "error");
+      }
+    }
+
+    // ================= ABOUT CHEF MODAL =================
+    function openAboutChefModal() {
+      playTapSound();
+      document.getElementById("aboutChefModal").classList.remove("hidden");
+    }
+
+    function closeAboutChefModal() {
+      playTapSound();
+      document.getElementById("aboutChefModal").classList.add("hidden");
+    }
+
+    // ================= SEARCH & CONTROLS =================
+    const searchInput = document.getElementById("searchInput");
+    const btnClearSearch = document.getElementById("btnClearSearch");
+
+    searchInput.addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      if (searchQuery.trim()) {
+        btnClearSearch.classList.remove("hidden");
+      } else {
+        btnClearSearch.classList.add("hidden");
+      }
+      renderSongs();
+    });
+
+    btnClearSearch.addEventListener("click", () => {
+      searchInput.value = "";
+      searchQuery = "";
+      btnClearSearch.classList.add("hidden");
+      renderSongs();
+    });
+
+    document.getElementById("sortSelect").addEventListener("change", (e) => {
+      playTapSound();
+      sortMode = e.target.value;
+      renderSongs();
+    });
+
+    function resetFilters() {
+      playTapSound();
+      currentMakamFilter = "all";
+      searchQuery = "";
+      searchInput.value = "";
+      btnClearSearch.classList.add("hidden");
+      renderMakamFilters();
+      renderSongs();
+    }
+
+    function focusSearch() {
+      playTapSound();
+      const el = document.getElementById("searchInput");
+      el.focus();
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function scrollToTop() {
+      playTapSound();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
