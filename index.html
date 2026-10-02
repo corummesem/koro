@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr" class="dark scroll-smooth">
 <head>
   <meta charset="UTF-8">
@@ -921,8 +921,15 @@
       measurementId: "G-Q7QDK688R9"
     };
 
-    // Gemini API Configuration with Prioritized Model Fallbacks
-    const GEMINI_API_KEY = "AIzaSyCUEDGzwZBv7-UEg2AsmxqKBnHJUiqQMlU";
+    // Gemini API Configuration with Prioritized Model Fallbacks & Safe Masking
+    function resolveGeminiKey() {
+      const stored = localStorage.getItem("gemini_api_key");
+      if (stored) return stored;
+      const k = "__GEMINI_API_KEY__";
+      if (!k || k.startsWith("__")) return "";
+      try { return (k.startsWith("AIza") ? k : atob(k)); } catch(e) { return k; }
+    }
+    const GEMINI_API_KEY = resolveGeminiKey();
     const GEMINI_MODELS_PRIORITY = [
       "gemini-flash-lite-latest",
       "gemini-flash-latest",
@@ -2046,7 +2053,8 @@ Bilmediğin veya kağıtta yazmayan alanlar için genel musiki bilgini kullanara
 
       for (const modelName of GEMINI_MODELS_PRIORITY) {
         try {
-          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+          const activeKey = resolveGeminiKey();
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${activeKey}`;
           console.log(`Trying Gemini model: ${modelName}`);
 
           const response = await fetch(endpoint, {
