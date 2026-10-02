@@ -1,0 +1,26 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Replace API Key in Files (Base64 Masked)
+        run: |
+          # Anahtarı Base64 yaparak repoda düz metin görünmesini engeller
+          B64_KEY=$(echo -n "${{ secrets.GEMINI_API_KEY }}" | base64 | tr -d '\n')
+          find . -type f \( -name "*.html" -o -name "*.js" \) -exec sed -i "s|__GEMINI_API_KEY__|$B64_KEY|g" {} +
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
