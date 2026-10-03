@@ -72,6 +72,7 @@
   <script src="catalog_ney.js" charset="UTF-8" defer></script>
   <script src="catalog_eb.js" charset="UTF-8" defer></script>
   <script src="catalog_kn.js" charset="UTF-8" defer></script>
+  <script src="catalog_yab.js" charset="UTF-8" defer></script>
 
   <!-- Firebase Compat SDK (Works seamlessly over file://, http://, https://) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -463,7 +464,7 @@
             <span>📚</span> Geniş Dijital Nota Kataloğu
           </h2>
           <p class="text-xs sm:text-sm text-stone-400 mt-1">
-            Türk Sanat Müziği, Türk Halk Müziği ve Popüler Müzik repertuvarından binlerce PDF nota belgesi. <span class="text-gold-500/80">(gitaregitim.net arşivi dâhil)</span>
+            Türk Sanat Müziği, Türk Halk Müziği ve Popüler Müzik repertuvarından binlerce PDF nota belgesi. <span class="text-gold-500/80">(gitaregitim.net, neyzen.com, erdincbal.com, kolaynota.com ve yabancı klasik arşivi dâhil)</span>
           </p>
         </div>
       </div>
@@ -477,7 +478,7 @@
         </span>
         <input type="text" 
                id="catalogSearchInput" 
-               placeholder="54.000+ eser içinde ara: Şarkı adı, makam, bestekâr, usûl, ton veya kategori..." 
+               placeholder="59.000+ eser içinde ara: Şarkı adı, makam, bestekâr, usûl, ton veya kategori..." 
                class="w-full pl-10 pr-10 py-3 rounded-xl bg-wood-900/90 border border-gold-500/30 text-stone-100 placeholder-stone-500 text-sm focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/50 transition-all">
         <button id="btnCatalogClearSearch" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-white">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -497,6 +498,12 @@
         </button>
         <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium border border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400 shrink-0 transition-all" data-cat="POP">
           Popüler Müzik (POP)
+        </button>
+        <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium border border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400 shrink-0 transition-all" data-cat="YAB">
+          Yabancı (YAB)
+        </button>
+        <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium border border-gold-500/30 bg-wood-900/80 text-stone-300 hover:border-gold-400 shrink-0 transition-all" data-cat="KLASİK">
+          Klasik (KLASİK)
         </button>
       </div>
 
@@ -1434,6 +1441,8 @@
         if (catalogFilterCat === 'TSM' && item.cat !== 'TSM') return false;
         if (catalogFilterCat === 'THM' && item.cat !== 'THM') return false;
         if (catalogFilterCat === 'POP' && item.cat !== 'POP' && item.cat !== 'POPÜLER') return false;
+        if (catalogFilterCat === 'YAB' && item.cat !== 'YAB') return false;
+        if (catalogFilterCat === 'KLASİK' && item.cat !== 'KLASİK') return false;
 
         // Alt kategori (kaynaktaki özgün kategori) filter
         if (catalogFilterSubCat !== 'all' && (item.sc || '') !== catalogFilterSubCat) return false;
@@ -1562,6 +1571,16 @@
       }
     }
 
+    function catalogCatPass(item) {
+      const c = catalogFilterCat;
+      if (c === 'TSM') return item.cat === 'TSM';
+      if (c === 'THM') return item.cat === 'THM';
+      if (c === 'POP') return item.cat === 'POP' || item.cat === 'POPÜLER';
+      if (c === 'YAB') return item.cat === 'YAB';
+      if (c === 'KLASİK') return item.cat === 'KLASİK';
+      return true;
+    }
+
     // Alt kategori seçeneklerini veriye göre doldur (ana kategoriye göre daraltılır)
     function refreshSubCategoryOptions() {
       const sel = document.getElementById("catalogSubCat");
@@ -1569,9 +1588,7 @@
       const counts = new Map();
       for (const item of externalCatalog) {
         if (!item.sc) continue;
-        if (catalogFilterCat === 'TSM' && item.cat !== 'TSM') continue;
-        if (catalogFilterCat === 'THM' && item.cat !== 'THM') continue;
-        if (catalogFilterCat === 'POP' && item.cat !== 'POP' && item.cat !== 'POPÜLER') continue;
+        if (!catalogCatPass(item)) continue;
         counts.set(item.sc, (counts.get(item.sc) || 0) + 1);
       }
       const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
@@ -1598,9 +1615,7 @@
       let n = 0;
       for (const item of externalCatalog) {
         if ((item.sc || '') !== catalogFilterSubCat) continue;
-        if (catalogFilterCat === 'TSM' && item.cat !== 'TSM') continue;
-        if (catalogFilterCat === 'THM' && item.cat !== 'THM') continue;
-        if (catalogFilterCat === 'POP' && item.cat !== 'POP' && item.cat !== 'POPÜLER') continue;
+        if (!catalogCatPass(item)) continue;
         n++;
       }
       el.textContent = n.toLocaleString('tr-TR') + ' eser';
