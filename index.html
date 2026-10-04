@@ -64,6 +64,7 @@
   </script>
 
   <!-- External Large Catalog Data: High-Performance Compressed Chunks (30.000+ Eser) -->
+  <script src="drive_map.js" charset="UTF-8"></script>
   <script src="catalog.js" charset="UTF-8"></script>
   <script src="catalog_pop.js" charset="UTF-8" defer></script>
   <script src="catalog_thm.js" charset="UTF-8" defer></script>
@@ -464,7 +465,7 @@
             <span>📚</span> Geniş Dijital Nota Kataloğu
           </h2>
           <p class="text-xs sm:text-sm text-stone-400 mt-1">
-            Türk Sanat Müziği, Türk Halk Müziği ve Popüler Müzik repertuvarından binlerce PDF nota belgesi. <span class="text-gold-500/80">(gitaregitim.net, neyzen.com, erdincbal.com, kolaynota.com ve yabancı klasik arşivi dâhil)</span>
+            Türk Sanat Müziği, Türk Halk Müziği ve Popüler Müzik repertuvarından binlerce PDF nota belgesi.
           </p>
         </div>
       </div>
@@ -573,18 +574,13 @@
         </div>
       </div>
 
-      <!-- Modal Body (Two Column Layout for Desktop, Stacked for Mobile) -->
-      <div class="flex-1 overflow-y-auto flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gold-500/20 bg-wood-950/70">
-        
-        <!-- Left: Interactive Sheet Music Preview -->
-        <div class="md:w-3/5 p-3 sm:p-5 flex flex-col h-full min-h-[380px] md:min-h-[560px]">
-          <!-- Sheet Header Controls -->
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-cinzel font-semibold text-gold-400 uppercase tracking-wider flex items-center gap-1.5">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              Nota Kağıdı
-            </span>
-            
+      <!-- Modal Body: mobilde 50/50 (PDF ust yari, bilgiler alt yari), masaustunde 3/5 - 2/5 -->
+      <div class="flex-1 min-h-0 overflow-hidden flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gold-500/20 bg-wood-950/70">
+
+        <!-- Sol: Nota kagidi onizleme (mobilde sabit 50vh) -->
+        <div class="md:w-3/5 p-3 sm:p-5 flex flex-col h-[52vh] md:h-auto md:min-h-[560px] shrink-0">
+          <!-- Sheet Header Controls (baslik kaldirildi; sadece kontroller) -->
+          <div class="flex items-center justify-end mb-2 flex-wrap gap-2">
             <div id="pdfPaginationBar" class="hidden flex items-center gap-1.5 bg-wood-850 px-2.5 py-1 rounded-xl border border-gold-500/30 text-xs">
               <button type="button" onclick="prevPdfPage()" class="p-1 px-1.5 rounded hover:bg-wood-800 text-stone-300 hover:text-gold-400 font-bold" title="Önceki Sayfa">◀</button>
               <span id="pdfPageIndicator" class="text-[11px] text-stone-300 font-mono">1 / 1</span>
@@ -606,15 +602,19 @@
             </button>
           </div>
 
-          <!-- Sheet Canvas / Viewer Container -->
-          <div id="modalViewerContainer" class="flex-1 w-full bg-wood-950/90 rounded-xl border border-gold-500/20 overflow-auto relative flex items-start justify-center min-h-[360px] p-3 sm:p-5">
-            <canvas id="pdfCanvas" class="hidden shadow-2xl rounded bg-white my-auto mx-auto"></canvas>
-            <div id="viewerFallback" class="w-full h-full flex items-center justify-center"></div>
+          <!-- Sheet Canvas / Viewer Container (tum yonlere kaydirilabilir + yakinlastirilabilir) -->
+          <div id="modalViewerContainer"
+               class="flex-1 w-full bg-wood-950/90 rounded-xl border border-gold-500/20 overflow-auto relative min-h-[280px] cursor-grab active:cursor-grabbing touch-none select-none">
+            <div id="pdfStage" class="flex items-start justify-center min-w-full min-h-full p-3 sm:p-5">
+              <canvas id="pdfCanvas" class="hidden shadow-2xl rounded bg-white"></canvas>
+            </div>
+            <div id="viewerFallback" class="absolute inset-0 w-full h-full flex items-center justify-center"></div>
           </div>
+          <p class="mt-1.5 text-[10px] text-stone-500 text-center">Sürükle: kaydır · Tek parmak: kaydır · İki parmak / Ctrl+tekerlek: yakınlaştır</p>
         </div>
 
-        <!-- Right: Song Details & Full Lyrics (Güfte) -->
-        <div class="md:w-2/5 p-4 sm:p-6 flex flex-col justify-between overflow-y-auto bg-wood-900/60">
+        <!-- Sag: Sarki bilgileri ve gufte (mobilde kalan alan, kendi icinde kaydirilir) -->
+        <div class="md:w-2/5 p-4 sm:p-6 flex flex-col justify-between overflow-y-auto bg-wood-900/60 flex-1 min-h-0">
           <div>
             <!-- Metadata Cards -->
             <div class="grid grid-cols-2 gap-2.5 mb-5 text-xs">
@@ -1546,15 +1546,12 @@
               </span>
 
               <div class="flex items-center gap-1.5">
-                ${item.pg ? `<a href="${escapeHtml(item.pg)}" target="_blank" rel="noopener noreferrer" title="Kaynak sayfayı aç" class="px-2 py-1.5 rounded-xl bg-wood-850 hover:bg-wood-800 text-stone-300 hover:text-gold-300 border border-gold-500/20 text-xs font-medium flex items-center gap-1 transition-all">
-                  <span>Kaynak</span>
-                </a>` : ''}
                 <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-wood-850 hover:bg-wood-800 text-stone-200 hover:text-gold-300 border border-gold-500/20 text-xs font-medium flex items-center gap-1 transition-all">
                   <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                   <span>Görüntüle</span>
                 </a>
 
-                <a href="${escapeHtml(item.url)}" download target="_blank" rel="noopener noreferrer" onclick="playDownloadSound()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-400 hover:to-amber-400 text-wood-950 font-bold text-xs flex items-center gap-1 shadow-md shadow-gold-500/20 transition-all">
+                <a href="${escapeHtml(downloadUrlFor(item.url))}" target="_blank" rel="noopener noreferrer" onclick="playDownloadSound()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-400 hover:to-amber-400 text-wood-950 font-bold text-xs flex items-center gap-1 shadow-md shadow-gold-500/20 transition-all">
                   <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   <span>İndir</span>
                 </a>
@@ -1714,7 +1711,13 @@
       }
 
       if (!song.fileData) {
-        showToast("Nota dosyası bulunamadı!", "error");
+        // Katalog notalari: dogrudan Drive / kaynak adresinden indir
+        if (song.url) {
+          window.open(downloadUrlFor(song.url), '_blank', 'noopener');
+          showToast(`"${song.title}" indiriliyor...`, "success");
+        } else {
+          showToast("Nota dosyası bulunamadı!", "error");
+        }
         return;
       }
 
@@ -1813,12 +1816,23 @@
           canvas.classList.add("hidden");
           fallbackContainer.classList.remove("hidden");
           currentPdfScale = 1.0;
-          fallbackContainer.innerHTML = `
-            <img id="previewImg" src="${activeModalBlobUrl}" alt="${escapeHtml(song.title)}" style="transform: scale(1); transform-origin: top center; transition: transform 0.15s ease;" class="shadow-2xl rounded-lg my-auto mx-auto max-w-full">
-          `;
+          // Resim onizlemesi: img'yi pdfStage icine koy ki pan/zoom motoru calisin
+          const stage = document.getElementById("pdfStage");
+          stage.innerHTML = '<img id="previewImg" src="' + activeModalBlobUrl +
+            '" alt="' + escapeHtml(song.title) + '" class="shadow-2xl rounded-lg">';
+          const imgEl = document.getElementById("previewImg");
+          if (imgEl) {
+            const fitImg = () => {
+              if (!imgEl.naturalWidth) return;
+              const box = viewerBox();
+              const bw = (box ? box.clientWidth : 600) - 32;
+              const fit = Math.min(1, bw / imgEl.naturalWidth);
+              initPanZoom(imgEl.naturalWidth, imgEl.naturalHeight, fit);
+            };
+            if (imgEl.complete && imgEl.naturalWidth) fitImg();
+            else imgEl.onload = fitImg;
+          }
           document.getElementById("pdfPageIndicator").textContent = "1 / 1";
-          const zInd = document.getElementById("zoomIndicator");
-          if (zInd) zInd.textContent = "100%";
         }
       } else {
         paginationBar.classList.add("hidden");
@@ -1836,56 +1850,219 @@
 
     function renderIframeFallback(url) {
       const canvas = document.getElementById("pdfCanvas");
+      const stage = document.getElementById("pdfStage");
       const fallbackContainer = document.getElementById("viewerFallback");
       const paginationBar = document.getElementById("pdfPaginationBar");
       paginationBar.classList.add("hidden");
       canvas.classList.add("hidden");
+      if (stage) stage.innerHTML = '';                    // eski canvas/img temizle
       fallbackContainer.classList.remove("hidden");
-      fallbackContainer.innerHTML = `
-        <iframe src="${url}#toolbar=0" class="w-full h-full min-h-[380px] md:min-h-[520px] border-0 rounded-xl bg-white"></iframe>
-      `;
+      // Drive /preview: gomulabilir ve icinde kendi pan/zoom'u var
+      const isDrive = /drive\.google\.com\/file\/d\//.test(url);
+      fallbackContainer.innerHTML = isDrive
+        ? `<iframe src="${url}" class="w-full h-full min-h-[280px] md:min-h-[520px] border-0 bg-white"></iframe>`
+        : `<iframe src="${url}#toolbar=0" class="w-full h-full min-h-[280px] md:min-h-[520px] border-0 rounded-xl bg-white"></iframe>`;
+      if (stage) { stage.style.width = ''; stage.style.height = ''; }
     }
 
     let pdfRenderTask = null;
 
+    // ------------------------------------------------------------------
+    // PAN / ZUM MOTORU
+    // Onceki yontem: her zoom'da canvas yeniden ciziliyordu ve konteyner
+    // sadece yukari/asagi kayabiliyordu. Simdi: cizim bir kez yapilir,
+    // gosterim CSS transform ile olceklenir, konteyner HER IKI YONDE kayar.
+    //   fare / tek parmak surukleme        -> kaydirma
+    //   iki parmak kiskac / Ctrl+tekerlek  -> yakinlastirma
+    //   tekerlek                           -> dikey kaydirma
+    // ------------------------------------------------------------------
+    const panZoom = { z: 1, natW: 0, natH: 0 };
+
+    function viewerBox() {
+      return document.getElementById('modalViewerContainer');
+    }
+
+    function applyPanZoom() {
+      const stage = document.getElementById('pdfStage');
+      if (!stage) return;
+      const canvas = document.getElementById('pdfCanvas');
+      const img = document.getElementById('previewImg');
+      const target = (canvas && !canvas.classList.contains('hidden')) ? canvas : img;
+      const z = panZoom.z;
+
+      if (target && panZoom.natW && panZoom.natH) {
+        // stage gercek boyut = dogal boyut * zoom  ->  kaydirma cubuklari dogru olur
+        stage.style.width = Math.ceil(panZoom.natW * z + 32) + 'px';
+        stage.style.height = Math.ceil(panZoom.natH * z + 32) + 'px';
+        target.style.transformOrigin = 'center center';
+        target.style.transform = 'scale(' + z + ')';
+      }
+      const zInd = document.getElementById('zoomIndicator');
+      if (zInd) zInd.textContent = Math.round(z * 100) + '%';
+    }
+
+    function clampScroll() {
+      const box = viewerBox();
+      if (!box) return;
+      box.scrollLeft = Math.max(0, Math.min(box.scrollLeft, box.scrollWidth - box.clientWidth));
+      box.scrollTop = Math.max(0, Math.min(box.scrollTop, box.scrollHeight - box.clientHeight));
+    }
+
+    function setZoom(newZ, cx, cy) {
+      const box = viewerBox();
+      if (!box) return;
+      const old = panZoom.z;
+      const z = Math.max(0.4, Math.min(6, Math.round(newZ * 100) / 100));
+      if (z === old) return;
+      // imleci sabit tut: fare konumu yeni olcekte ayni icerigi gosterir
+      const px = cx === undefined ? box.clientWidth / 2 : cx;
+      const py = cy === undefined ? box.clientHeight / 2 : cy;
+      const contentX = box.scrollLeft + px;
+      const contentY = box.scrollTop + py;
+      const ratio = z / old;
+      panZoom.z = z;
+      applyPanZoom();
+      box.scrollLeft = contentX * ratio - px;
+      box.scrollTop = contentY * ratio - py;
+      clampScroll();
+    }
+
+    function initPanZoom(natW, natH, startZ) {
+      panZoom.natW = natW || 0;
+      panZoom.natH = natH || 0;
+      panZoom.z = startZ || 1;
+      applyPanZoom();
+      const box = viewerBox();
+      if (box) {
+        box.scrollLeft = Math.max(0, (box.scrollWidth - box.clientWidth) / 2);
+        box.scrollTop = 0;
+      }
+    }
+
+    (function setupPanZoom() {
+      const box = document.getElementById('modalViewerContainer');
+      if (!box) return;
+      box.tabIndex = 0;
+
+      let dragging = false, sx = 0, sy = 0, sl = 0, st = 0;
+      const pts = new Map();
+      let pinchStart = 0, pinchZ0 = 1;
+
+      box.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('#pdfPaginationBar, #modalBtnOpenNewTab')) return;
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (pts.size === 2) {                       // kiskac basladi: suruklemeyi birak
+          const v = [...pts.values()];
+          pinchStart = Math.hypot(v[0].x - v[1].x, v[0].y - v[1].y);
+          pinchZ0 = panZoom.z;
+          dragging = false;
+          box.style.cursor = '';
+          return;
+        }
+        dragging = true;
+        sx = e.clientX; sy = e.clientY;
+        sl = box.scrollLeft; st = box.scrollTop;
+        box.style.cursor = 'grabbing';
+        try { box.setPointerCapture(e.pointerId); } catch (_) { }
+      });
+
+      box.addEventListener('pointermove', (e) => {
+        if (pts.has(e.pointerId)) pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (pts.size === 2 && pinchStart) {         // iki parmak kiskaci
+          e.preventDefault();
+          const v = [...pts.values()];
+          const d = Math.hypot(v[0].x - v[1].x, v[0].y - v[1].y);
+          panZoom.z = Math.max(0.4, Math.min(6, pinchZ0 * (d / pinchStart)));
+          applyPanZoom();
+          return;
+        }
+        if (!dragging) return;
+        box.scrollLeft = sl - (e.clientX - sx);
+        box.scrollTop = st - (e.clientY - sy);
+      });
+
+      const release = (e) => {
+        pts.delete(e.pointerId);
+        if (pts.size < 2) pinchStart = 0;
+        if (!dragging) return;
+        dragging = false;
+        box.style.cursor = '';
+        try { box.releasePointerCapture(e.pointerId); } catch (_) { }
+      };
+      box.addEventListener('pointerup', release);
+      box.addEventListener('pointercancel', release);
+      box.addEventListener('pointerleave', (e) => { if (dragging && !pts.has(e.pointerId)) release(e); });
+
+      box.addEventListener('wheel', (e) => {
+        if (e.ctrlKey) {                            // Ctrl+tekerlek = yakinlastir
+          e.preventDefault();
+          const r = box.getBoundingClientRect();
+          setZoom(panZoom.z * (e.deltaY < 0 ? 1.12 : 1 / 1.12), e.clientX - r.left, e.clientY - r.top);
+        } else if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+          e.preventDefault();
+          box.scrollLeft += e.deltaX;               // yatay tekerlek
+        }
+      }, { passive: false });
+
+      box.addEventListener('keydown', (e) => {
+        const s = 60;
+        if (e.key === 'ArrowLeft') { box.scrollLeft -= s; e.preventDefault(); }
+        else if (e.key === 'ArrowRight') { box.scrollLeft += s; e.preventDefault(); }
+        else if (e.key === 'ArrowUp') { box.scrollTop -= s; e.preventDefault(); }
+        else if (e.key === 'ArrowDown') { box.scrollTop += s; e.preventDefault(); }
+        else if (e.key === '+' || e.key === '=') { setZoom(panZoom.z + 0.2); e.preventDefault(); }
+        else if (e.key === '-') { setZoom(panZoom.z - 0.2); e.preventDefault(); }
+      });
+    })();
+
     async function renderPdfPage(pageNumber) {
       if (!currentPdfDoc) return;
-      
+
       if (pdfRenderTask) {
-        try { pdfRenderTask.cancel(); } catch(e){}
+        try { pdfRenderTask.cancel(); } catch (e) { }
       }
 
-      const canvas = document.getElementById("pdfCanvas");
+      const canvas = document.getElementById('pdfCanvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      
+
       try {
         const page = await currentPdfDoc.getPage(pageNumber);
-        const viewport = page.getViewport({ scale: currentPdfScale });
+        // Cizim olcegi SABIT. Gosterim olcegi CSS transform ile uygulanir;
+        // boylece her zoom'da yeniden render gerekmez (hizli + pürüzsüz).
+        const renderScale = 1.6;
+        const viewport = page.getViewport({ scale: renderScale });
 
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        canvas.style.width = `${viewport.width}px`;
-        canvas.style.height = `${viewport.height}px`;
+        canvas.style.width = viewport.width + 'px';
+        canvas.style.height = viewport.height + 'px';
 
-        const renderContext = {
-          canvasContext: ctx,
-          viewport: viewport
-        };
+        const renderContext = { canvasContext: ctx, viewport: viewport };
         pdfRenderTask = page.render(renderContext);
         await pdfRenderTask.promise;
         pdfRenderTask = null;
 
-        const pInd = document.getElementById("pdfPageIndicator");
-        if (pInd) pInd.textContent = `${pageNumber} / ${currentPdfDoc.numPages}`;
+        const pInd = document.getElementById('pdfPageIndicator');
+        if (pInd) pInd.textContent = pageNumber + ' / ' + currentPdfDoc.numPages;
 
-        const zInd = document.getElementById("zoomIndicator");
-        if (zInd) zInd.textContent = `${Math.round(currentPdfScale * 100)}%`;
-      } catch (err) {
-        if (err && err.name === 'RenderingCancelledException') {
-          return;
+        // Kapsayiciya sigmiyorsa otomatik uzaklastir
+        const box = viewerBox();
+        let z = currentPdfScale || 1;
+        if (box && box.clientWidth) {
+          const fit = Math.min(
+            (box.clientWidth - 32) / viewport.width,
+            (box.clientHeight - 32) / viewport.height
+          );
+          if (fit > 0.15 && fit < z) z = Math.max(0.4, fit);
         }
-        console.warn("PDF render error:", err);
+        currentPdfScale = z;
+        initPanZoom(viewport.width, viewport.height, z);
+      } catch (err) {
+        if (err && err.name === 'RenderingCancelledException') return;
+        console.warn('PDF render error:', err);
       }
     }
 
@@ -1903,34 +2080,32 @@
       renderPdfPage(currentPdfPage);
     };
 
-    window.zoomPdf = function(delta) {
+    window.zoomPdf = function (delta) {
       playTapSound();
-      currentPdfScale = Math.max(0.5, Math.min(3.5, Math.round((currentPdfScale + delta) * 100) / 100));
-      if (currentPdfDoc) {
-        renderPdfPage(currentPdfPage);
-      } else {
-        const img = document.getElementById("previewImg");
-        if (img) {
-          img.style.transform = `scale(${currentPdfScale})`;
-        }
-        const zInd = document.getElementById("zoomIndicator");
-        if (zInd) zInd.textContent = `${Math.round(currentPdfScale * 100)}%`;
-      }
+      // Artik CSS transform uygulanir; yeniden render yok.
+      setZoom(panZoom.z + delta);
     };
 
-    window.resetZoomPdf = function() {
+    window.resetZoomPdf = function () {
       playTapSound();
-      currentPdfScale = currentPdfDoc ? 1.15 : 1.0;
-      if (currentPdfDoc) {
-        renderPdfPage(currentPdfPage);
-      } else {
-        const img = document.getElementById("previewImg");
-        if (img) {
-          img.style.transform = `scale(${currentPdfScale})`;
-        }
-        const zInd = document.getElementById("zoomIndicator");
-        if (zInd) zInd.textContent = "100%";
+      const box = viewerBox();
+      const target = document.getElementById('pdfCanvas');
+      let z = 1;
+      if (box && target && panZoom.natH) {
+        const fit = Math.min(
+          (box.clientWidth - 32) / panZoom.natW,
+          (box.clientHeight - 32) / panZoom.natH
+        );
+        if (fit > 0.15) z = Math.min(1, fit);
       }
+      panZoom.z = z;
+      currentPdfScale = z;
+      applyPanZoom();
+      if (box) {
+        box.scrollLeft = Math.max(0, (box.scrollWidth - box.clientWidth) / 2);
+        box.scrollTop = 0;
+      }
+      clampScroll();
     };
 
     window.closeSongModal = function() {
@@ -2436,6 +2611,18 @@ Bilmediğin veya kağıtta yazmayan alanlar için genel musiki bilgini kullanara
     function scrollToTop() {
       playTapSound();
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /**
+     * Drive /file/d/<ID>/preview adresi tarayicida gosterim icin kullanilir
+     * ama "Indir" dugmesi dogrudan indirme adresine cevrilmelidir
+     * (cross-origin oldugu icin download attribute calismaz).
+     */
+    function downloadUrlFor(url) {
+      if (typeof url !== 'string') return url;
+      var m = /^https:\/\/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)\/preview/.exec(url);
+      if (m) return 'https://drive.google.com/uc?export=download&id=' + m[1];
+      return url;
     }
 
     function escapeHtml(text) {
