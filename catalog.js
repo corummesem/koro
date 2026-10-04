@@ -25,9 +25,30 @@
       for (let i = 0; i < len; i++) {
         const row = rows[i];
         let url = row[6] || "";
-        if (url.startsWith("0:")) url = prefixes[0] + url.slice(2);
-        else if (url.startsWith("1:")) url = prefixes[1] + url.slice(2);
-        else if (url.startsWith("2:")) url = prefixes[2] + url.slice(2);
+        // On ek cozumu: "N:yzol" -> prefixes[N] + yzol.
+        // ONCEDEN sadece 0/1/2 ele aliniyordu; catalog_yab.js 4 on ek iceriyor
+        // ve 3: (mutopiaproject.org) kayitlari cozulmedigi icin 381 nota
+        // "3:/ftp/..." olarak kaliyordu (tarayici file:/// olarak yorumluyordu).
+        var pm = /^(\d+):/.exec(url);
+        if (pm && prefixes[Number(pm[1])] !== undefined) {
+          url = prefixes[Number(pm[1])] + url.slice(pm[0].length);
+        }
+
+
+// >>> DRIVE MIGRATION (otomatik) >>>
+        if (window.DRIVE_MAP) {
+          var _did = window.DRIVE_MAP[url];
+          if (_did) url = window.DRIVE_MAP_PREFIX + _did + (window.DRIVE_MAP_SUFFIX || "");
+          else {
+            // Zaten onceceden Drive'da olan notalar (catalog_eb.js, 7697 adet)
+            // haritada yok; eski "uc?export=download" adresini de yeni
+            // "/file/d/ID/preview" bicimine cevir ki tarayici indirme
+            // yapmasin, icerigi goruntulesin.
+            var _old = /^https:\/\/drive\.google\.com\/uc\?(?:export=download&)?id=([A-Za-z0-9_-]{10,})/.exec(url);
+            if (_old) url = window.DRIVE_MAP_PREFIX + _old[1] + (window.DRIVE_MAP_SUFFIX || "");
+          }
+        }
+// <<< DRIVE MIGRATION (otomatik) <<<
 
         // Deduplicate by URL
         if (url && this.seenUrls.has(url)) continue;
